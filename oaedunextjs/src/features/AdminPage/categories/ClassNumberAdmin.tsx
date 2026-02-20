@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState, useMemo } from "react";
 import {
   Box,
@@ -21,25 +23,24 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import ClassNumberService from "../../../api/services/ClassNumberService";
-import { useEntityDetails } from "../../../hooks/useEntityDetails";
-import { toIsoTime } from "../../../utils/date";
+import ClassNumberService from "@/api/services/ClassNumberService";
+import { useEntityDetails } from "@/hooks/useEntityDetails";
+import { toIsoTime } from "@/utils/date";
+import { unwrapApiResponse } from "@/types/api.types";
+import type { ClassNumberEntity } from "@/types/entities";
 
-// Допоміжні функції для форматування часу
-const formatTimeToHHMM = (timeString: string): string => {
-  if (!timeString) return "";
-  // Отримує перші 5 символів (HH:mm) з будь-якого формату часу
-  return timeString.substring(0, 5);
+const formatTimeToHHMM = (timeString: string | number): string => {
+  if (timeString == null || timeString === "") return "";
+  return String(timeString).substring(0, 5);
 };
 
-const formatTimeForSend = (timeString: string): string => {
-  if (!timeString) return "";
-  // Форматує час як HH:mm:00 для відправки на сервер
+const formatTimeForSend = (timeString: string | number): string => {
+  if (timeString == null || timeString === "") return "";
   const hhMm = formatTimeToHHMM(timeString);
   if (hhMm.length === 5) {
     return `${hhMm}:00`;
   }
-  return timeString;
+  return String(timeString);
 };
 
 const emptyClassNumber = {
@@ -52,36 +53,28 @@ const emptyClassNumber = {
 type ClassNumberField = keyof typeof emptyClassNumber;
 
 const ClassNumberAdmin: React.FC = () => {
-  const [classNumbers, setClassNumbers] = useState<any[]>([]);
+  const [classNumbers, setClassNumbers] = useState<ClassNumberEntity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newClassNumber, setNewClassNumber] =
-    useState<Record<ClassNumberField, any>>(emptyClassNumber);
+    useState<Record<ClassNumberField, string | number>>(emptyClassNumber);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // Пошук
   const [tableMode, setTableMode] = useState<"all" | "search">("all");
   const [searchType, setSearchType] = useState<"id" | "number">("id");
   const [findId, setFindId] = useState("");
   const [findNumber, setFindNumber] = useState("");
-  const [foundClassNumber, setFoundClassNumber] = useState<any | null>(null);
+  const [foundClassNumber, setFoundClassNumber] =
+    useState<ClassNumberEntity | null>(null);
 
-  const entityDetails = useEntityDetails();
+  const entityDetails = useEntityDetails<ClassNumberEntity>();
 
-  // Завантажити всі номери занять
   const fetchClassNumbers = async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await ClassNumberService.getAll(0, 100);
-      if (Array.isArray(data)) setClassNumbers(data);
-      else if (
-        data &&
-        typeof data === "object" &&
-        Array.isArray((data as any).data)
-      )
-        setClassNumbers((data as any).data);
-      else setClassNumbers([]);
+      setClassNumbers(unwrapApiResponse(data));
     } catch {
       setError("Помилка завантаження номерів занять");
     } finally {
@@ -93,7 +86,6 @@ const ClassNumberAdmin: React.FC = () => {
     fetchClassNumbers();
   }, []);
 
-  // Створити/оновити номер заняття
   const handleSave = async () => {
     setLoading(true);
     setError(null);
@@ -101,8 +93,12 @@ const ClassNumberAdmin: React.FC = () => {
       const payload = {
         ...newClassNumber,
         number: Number(newClassNumber.number),
-        time_start: toIsoTime(newClassNumber.time_start?.slice(0, 5)),
-        time_end: toIsoTime(newClassNumber.time_end?.slice(0, 5)),
+        time_start: toIsoTime(
+          String(newClassNumber.time_start ?? "").slice(0, 5)
+        ),
+        time_end: toIsoTime(
+          String(newClassNumber.time_end ?? "").slice(0, 5)
+        ),
       };
       if (editingId !== null) {
         await ClassNumberService.update({ ...payload, id: editingId });
@@ -123,7 +119,6 @@ const ClassNumberAdmin: React.FC = () => {
     }
   };
 
-  // Видалити номер заняття
   const handleDelete = async (id: number) => {
     setLoading(true);
     setError(null);
@@ -137,24 +132,18 @@ const ClassNumberAdmin: React.FC = () => {
     }
   };
 
-  // Пошук номера заняття
   const handleFind = async () => {
     setLoading(true);
     setError(null);
     setFoundClassNumber(null);
     try {
-      let data = null;
+      let data: ClassNumberEntity | null = null;
       if (searchType === "id") {
         data = await ClassNumberService.getById(Number(findId));
       } else if (searchType === "number") {
         const all = await ClassNumberService.getAll(0, 100);
-        // Явно вказуємо тип для all
-        const arr = Array.isArray(all)
-          ? all
-          : Array.isArray((all as any).data)
-          ? (all as any).data
-          : [];
-        data = arr.find((d: any) => String(d.number) === findNumber);
+        const arr = unwrapApiResponse(all);
+        data = arr.find((d) => String(d.number) === findNumber) ?? null;
       }
       setFoundClassNumber(data);
     } catch {
@@ -164,7 +153,6 @@ const ClassNumberAdmin: React.FC = () => {
     }
   };
 
-  // Мемоізовані дані для таблиці
   const tableData = useMemo(() => {
     if (tableMode === "all") return classNumbers;
     if (!foundClassNumber) return [];
@@ -185,7 +173,6 @@ const ClassNumberAdmin: React.FC = () => {
       {loading && <CircularProgress />}
       {error && <Typography color="error">{error}</Typography>}
 
-      {/* Форма створення/редагування */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Typography variant="h6">Створити/оновити номер заняття</Typography>
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 2 }}>
@@ -255,7 +242,6 @@ const ClassNumberAdmin: React.FC = () => {
         )}
       </Paper>
 
-      {/* Пошук і таблиця */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <FormControl sx={{ minWidth: 180, mr: 2 }} size="small">
@@ -263,7 +249,7 @@ const ClassNumberAdmin: React.FC = () => {
             <Select
               value={tableMode}
               label="Режим"
-              onChange={(e) => setTableMode(e.target.value as any)}
+              onChange={(e) => setTableMode(e.target.value as "all" | "search")}
             >
               <MenuItem value="all">Всі номери занять</MenuItem>
               <MenuItem value="search">Пошук</MenuItem>
@@ -276,7 +262,7 @@ const ClassNumberAdmin: React.FC = () => {
                 <Select
                   value={searchType}
                   label="Тип пошуку"
-                  onChange={(e) => setSearchType(e.target.value as any)}
+                  onChange={(e) => setSearchType(e.target.value as "id" | "number")}
                 >
                   <MenuItem value="id">За ID</MenuItem>
                   <MenuItem value="number">За номером</MenuItem>
@@ -321,7 +307,7 @@ const ClassNumberAdmin: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {tableData.map((classNumber: any) => (
+            {tableData.map((classNumber) => (
               <TableRow key={classNumber.id}>
                 <TableCell>
                   <span
@@ -378,7 +364,6 @@ const ClassNumberAdmin: React.FC = () => {
         </Table>
       </Paper>
 
-      {/* Модальне вікно для деталей */}
       <Dialog
         open={entityDetails.modalOpen}
         onClose={entityDetails.close}

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="Generator" content="For Microsoft Word">
+<title>Звіт про проходження практики виробничої професійно-орієнтованої</title>
+<style>
+body { font-family: Times New Roman, serif; font-size: 14pt; line-height: 1.35; margin: 2cm; }
+h1 { font-size: 16pt; font-weight: bold; text-align: center; margin-top: 12pt; margin-bottom: 6pt; }
+h2 { font-size: 15pt; font-weight: bold; margin-top: 14pt; margin-bottom: 6pt; }
+h3 { font-size: 14pt; font-weight: bold; margin-top: 10pt; margin-bottom: 4pt; }
+p { margin: 0 0 6pt; text-align: justify; }
+.toc { margin: 18pt 0; }
+.toc p { margin: 2pt 0; }
+table { border-collapse: collapse; width: 100%; margin: 12pt 0; }
+td, th { border: 1px solid #000; padding: 6pt 8pt; vertical-align: top; }
+th { font-weight: bold; background: #f0f0f0; }
+.signature { margin-top: 24pt; }
+.center { text-align: center; }
+strong { font-weight: bold; }
+a { color: #0066cc; }
+.figure { margin: 14pt 0; text-align: center; }
+.figure-placeholder { border: 1px dashed #888; background: #f8f8f8; color: #666; padding: 24pt 16pt; font-size: 12pt; margin: 8pt 0; }
+.figcaption { font-style: italic; margin-top: 6pt; }
+</style>
+</head>
+<body>
+
+<h1 class="center">МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ</h1>
+<h1 class="center">НАЦІОНАЛЬНИЙ УНІВЕРСИТЕТ «ОСТРОЗЬКА АКАДЕМІЯ»</h1>
+<h2 class="center">Кафедра інформаційних технологій та аналітики даних</h2>
+
+<p style="margin-top: 24pt;">&nbsp;</p>
+
+<h1 class="center">ЗВІТ</h1>
+<h1 class="center">ПРО ПРОХОДЖЕННЯ ПРАКТИКИ ВИРОБНИЧОЇ ПРОФЕСІЙНО-ОРІЄНТОВАНОЇ</h1>
+
+<p>здобувача (ки) вищої освіти<br>
+першого (бакалаврського) рівня<br>
+четвертого року навчання групи КН-42<br>
+спеціальності 122 Комп'ютерні науки<br>
+ОПП «Комп'ютерні науки»</p>
+
+<p><strong>Тарасюка Дмитра Олександровича</strong></p>
+
+<p><strong>Термін практики</strong> з 26.01.2026 по 20.02.2026 р.<br>
+<strong>База практики</strong> — ТОВ «ХАНІКОМБ СОФТ»</p>
+
+<p><strong>Керівник практики від університету</strong><br>
+викладач-стажист <strong>Денис МАЦЕВИЧ</strong></p>
+
+<p>Члени комісії: ______________________<br>
+_______________________<br>
+_______________________</p>
+
+<p class="center"><strong>Острог — 2026 р.</strong></p>
+
+<hr>
+
+<h2>Зміст</h2>
+<div class="toc">
+<p>ВСТУП .................................................................................................................... 3</p>
+<p>ПРЕДМЕТНЕ СЕРЕДОВИЩЕ ................................................................................. 4</p>
+<p>3.1 Опис системи та користувачі ...................................................................... 4</p>
+<p>3.2 Функціональна модель та процес діяльності ............................................. 5</p>
+<p>АРХІТЕКТУРА РІШЕННЯ ...................................................................................... 6</p>
+<p>4.1 Загальна архітектура (Next.js App Router) .............................................. 6</p>
+<p>4.2 Маршрутизація, layout-и та захист ............................................................ 7</p>
+<p>4.3 Сервісний шар та інтеграція з API ........................................................... 8</p>
+<p>РОЗДІЛ 1. ВИВЧЕННЯ NEXT.JS ......................................................................... 9</p>
+<p>1.1 Вступ ......................................................................................................... 9</p>
+<p>1.2 React Foundations .................................................................................... 9</p>
+<p>1.3 App Router ................................................................................................ 10</p>
+<p>1.4 Pages Router .............................................................................................. 10</p>
+<p>1.5 SEO ............................................................................................................. 11</p>
+<p>РОЗДІЛ 2. ПЕРЕНОС ПРОЕКТУ OaEdu НА NEXT.JS ......................................... 12</p>
+<p>2.1 Вступ ......................................................................................................... 12</p>
+<p>2.2 Створення проекту (Next.js, структура папок, конфіг) ............................ 12</p>
+<p>2.3 Інфраструктура (layout, API, HttpClient, авторизація) ............................ 14</p>
+<p>2.4 Layout-и та ProtectedRoute ..................................................................... 15</p>
+<p>2.5 Login та волонтерство (список, деталі) ................................................. 16</p>
+<p>2.6 Новини (категорії та динамічна сторінка) .............................................. 17</p>
+<p>2.7 Головна та розклад (захищені сторінки) ................................................ 18</p>
+<p>2.8 AdminPanel та всі підсторінки ................................................................. 18</p>
+<p>2.9 SEO (metadata, robots, sitemap) та виправлення ..................................... 19</p>
+<p>2.10 Перевірка та тестування ......................................................................... 20</p>
+<p>ВИСНОВОК ......................................................................................................... 21</p>
+<p>СПИСОК ВИКОРИСТАНИХ ДЖЕРЕЛ ................................................................. 22</p>
+<p>ГРАФІК ПРОХОДЖЕННЯ ПРАКТИКИ .............................................................. 23</p>
+</div>
+
+<hr>
+
+<h2>ВСТУП</h2>
+
+<p>Під час практики я зосередився на вивченні фреймворку Next.js та переносі існуючого веб-проекту OaEdu з React (Vite) на Next.js з використанням App Router. Цей напрямок актуальний для сучасної веб-розробки, оскільки Next.js надає серверний рендеринг, покращене SEO, файлову маршрутизацію та інтеграцію з сучасним стеком React.</p>
+
+<p>Метою практики було: ознайомитися з офіційним курсом Learn Next.js на платформі <a href="https://nextjs.org/learn">nextjs.org/learn</a>, засвоїти основи React Foundations, App Router, Pages Router та SEO; виконати повний перенос проекту OaEdu (освітня платформа Острозької академії) у новий проект oaedunextjs зі збереженням функціональності, захисту маршрутів та додаванням SEO-оптимізації.</p>
+
+<p>Результатом стало повністю робочий проект на Next.js 16 з перенесеними сторінками (головна, розклад, новини, волонтерство, адмін-панель), авторизацією, layout-ами та налаштованими metadata, sitemap та robots для пошукових систем.</p>
+
+<hr>
+
+<h2>ПРЕДМЕТНЕ СЕРЕДОВИЩЕ</h2>
+
+<h3>3.1 Опис системи та користувачі</h3>
+<p><strong>OaEdu</strong> — веб-застосунок освітньої платформи Національного університету «Острозька академія». Система призначена для інформаційної підтримки навчального процесу: перегляд розкладу занять, отримання новин університету, ознайомлення з можливостями волонтерства та (для адміністраторів) управління довідниками та контентом через адмін-панель.</p>
+<p><strong>Користувачі системи:</strong></p>
+<p><strong>Здобувач (студент, викладач)</strong> — авторизований користувач, який переглядає головну сторінку, розклад занять, новини; має доступ до особистого кабінету після входу (Login). Не має доступу до адмін-панелі.</p>
+<p><strong>Адміністратор</strong> — користувач з роллю «Admin», який крім перегляду має доступ до розділу AdminPanel: управління розкладами, викладачами, предметами, спеціальностями, ролями, кафедрами, групами, типами занять, номерами пар, новинами та волонтерством.</p>
+<p><strong>Публічні можливості (без авторизації):</strong> перегляд сторінки входу (Login), розділу «Новини» (категорії та статті), розділу «Волонтерство» (список та деталі). Захищені розділи (головна, розклад) та AdminPanel потребують авторизації; AdminPanel — додатково перевірки ролі.</p>
+
+<h3>3.2 Функціональна модель та процес діяльності</h3>
+<p><strong>Основні функціональні підсистеми:</strong></p>
+<p>1. <strong>Автентифікація</strong> — вхід за логіном/паролем, збереження JWT-токена, перевірка прав доступу при переході на захищені маршрути.</p>
+<p>2. <strong>Інформаційні сторінки</strong> — головна (HomePage), розклад (schedule з фільтрами за групою/викладачем/датою), новини (категорії: загальні, спорт, події, наука, культура; сторінка деталей новини), волонтерство (список та деталі оголошень).</p>
+<p>3. <strong>Адміністрування</strong> — CRUD для сутностей: розклади, викладачі, предмети, спеціальності, ролі, кафедри, групи, типи занять, номери пар, новини, волонтерство. Кожен підрозділ має таблицю, форму додавання/редагування, пошук за ID або іншими полями.</p>
+<p><strong>Процес діяльності (спрощено):</strong> користувач відкриває сайт → переглядає публічні розділи (новини, волонтерство) або переходить на вхід → після авторизації отримує доступ до головної та розкладу; адміністратор додатково отримує доступ до AdminPanel і виконує операції з довідниками та контентом. Усі дані для відображення та змін надходять з зовнішнього API (бекенд); фронтенд (oaedunextjs) відповідає за інтерфейс, маршрутизацію, захист маршрутів та виклики API.</p>
+
+<hr>
+
+<h2>АРХІТЕКТУРА РІШЕННЯ</h2>
+
+<h3>4.1 Загальна архітектура (Next.js App Router)</h3>
+<p>Рішення <strong>oaedunextjs</strong> побудоване на <strong>Next.js 16</strong> з використанням <strong>App Router</strong>. Це означає файлову маршрутизацію: кожен каталог у <code>src/app/</code> з файлом <code>page.tsx</code> відповідає URL-шляху; <code>layout.tsx</code> у папці визначає спільний layout для усіх дочірніх маршрутів. Група маршрутів <code>(main)</code> не додає сегмента до URL, але дозволяє спільний layout (MainLayout) для головної, розкладу, новин, волонтерства та адмін-панелі.</p>
+<p><strong>Рівні архітектури:</strong></p>
+<p><strong>Клієнт (браузер)</strong> — отримує HTML/CSS/JS, виконує клієнтські компоненти (наприклад, форми, ProtectedRoute, інтерактивні списки).</p>
+<p><strong>Next.js (сервер + клієнт)</strong> — серверний рендеринг кореневого HTML, генерація metadata для SEO, обслуговування статики; клієнтська навігація після першого завантаження (SPA-подібна поведінка в межах App Router).</p>
+<p><strong>Зовнішній API (бекенд)</strong> — автентифікація, отримання розкладів, новин, волонтерства, довідників; всі запити йдуть через один базовий URL (наприклад, NEXT_PUBLIC_API_URL), з додаванням заголовка Authorization: Bearer &lt;token&gt; та при необхідності X-User-Id.</p>
+<p><strong>Стек:</strong> React 19, TypeScript, MUI 7 (Material-UI) з Material-NextJS для сумісності з App Router, Tailwind CSS, axios для HTTP, jwt-decode для перевірки токена.</p>
+
+<h3>4.2 Маршрутизація, layout-и та захист</h3>
+<p><strong>Кореневий layout</strong> (<code>app/layout.tsx</code>) — задає мову сторінки (uk), глобальні метадані (title, description, openGraph), обгортає додаток у провайдери: AppRouterCacheProvider (MUI), AuthProvider (стан авторизації), ThemeProvider (світла/темна тема).</p>
+<p><strong>Вкладені layout-и:</strong> <code>(main)/layout.tsx</code> повертає MainLayout (Header + Footer); усередині (main) окремі гілки можуть мати власний контекст (наприклад, <code>news/layout.tsx</code> з NewsLayout і metadata «Новини», <code>AdminPanel/layout.tsx</code> з AdminLayout і ProtectedRoute role="Admin").</p>
+<p><strong>Захист маршрутів</strong> реалізований патерном <strong>ProtectedRoute</strong>: клієнтський компонент перевіряє isAuthenticated та (опційно) роль користувача; при невиконанні умов виконується редірект на /Login. Захищені сторінки (головна, розклад) та layout AdminPanel обгорнуті в &lt;ProtectedRoute&gt; або &lt;ProtectedRoute role="Admin"&gt;.</p>
+
+<h3>4.3 Сервісний шар та інтеграція з API</h3>
+<p>Клієнт не викликає API напряму з компонентів; використовується <strong>сервісний шар</strong>: клас HttpClient (axios) з базовим URL, таймаутом та інтерцепторами. Інтерцептори автоматично додають до запитів заголовок Authorization з токеном з localStorage та (за наявності) X-User-Id; при відповіді 401 токен видаляється і користувач перенаправляється на Login. Окремі сервіси (AuthService, NewsService, ScheduleService, TeacherService тощо) створюють екземпляр HttpClient і експортують методи get, post, put, delete для відповідних ендпоінтів. Компоненти викликають ці сервіси (наприклад, ScheduleService.getAll(), AuthService.login()), що забезпечує єдину точку конфігурації та обробки помилок авторизації.</p>
+
+<hr>
+
+<h2>РОЗДІЛ 1. ВИВЧЕННЯ NEXT.JS</h2>
+
+<h3>1.1 Вступ</h3>
+<p>Під час практики я використовував офіційний інтерактивний курс <strong>Learn Next.js</strong> на платформі <a href="https://nextjs.org/learn">nextjs.org/learn</a> [1]. Курс охоплює перехід від основ React до побудови повноцінного застосунку на Next.js: від налаштування середовища та стилізації до роботи з даними, маршрутизації, SEO та розгортання. Навчання було поділено на блоки: React Foundations, App Router, Pages Router та SEO.</p>
+
+<h3>1.2 React Foundations</h3>
+<p><strong>Мета завдання:</strong><br>
+Ознайомитися з базовими концепціями React, необхідними для роботи з Next.js: компоненти, JSX, пропси, стан (useState), події, умовний рендеринг та списки. Розділ допомагає тим, хто переходить з чистого JavaScript або інших фреймворків, і закладає основи для розуміння серверних та клієнтських компонентів у Next.js.</p>
+<p><strong>Виконано:</strong> вивчення розділу React Foundations на nextjs.org/learn.</p>
+<div class="figure">
+<div class="figure-placeholder">[ Вставити скріншот: інтерфейс курсу Learn Next.js (nextjs.org/learn) або виконане завдання з розділу React Foundations ]</div>
+<p class="figcaption">Рис. 1. Приклад проходження розділу React Foundations на nextjs.org/learn</p>
+</div>
+
+<h3>1.3 App Router</h3>
+<p><strong>Мета завдання:</strong><br>
+Освоїти файлову маршрутизацію Next.js (App Router): структуру папки app, файли layout.tsx, page.tsx, динамічні сегменти [slug], вкладені layout-и, навігацію за допомогою компонента Link, а також відмінності між Server Components та Client Components. App Router є рекомендованим підходом у Next.js для нових проектів і підтримує streaming, layouts та покращене завантаження.</p>
+<p><strong>Виконано:</strong> вивчення розділу App Router на nextjs.org/learn.</p>
+
+<h3>1.4 Pages Router</h3>
+<p><strong>Мета завдання:</strong><br>
+Ознайомитися з класичним маршрутизатором Next.js (Pages Router): створення статичного блогу з використанням файлів pages/index.js, pages/[slug].js, getStaticPaths та getStaticProps. Розуміння Pages Router потрібне для підтримки існуючих проектів та порівняння з App Router.</p>
+<p><strong>Виконано:</strong> вивчення розділу Next.js Pages Router на nextjs.org/learn.</p>
+
+<h3>1.5 SEO</h3>
+<p><strong>Мета завдання:</strong><br>
+Навчитися додавати метадані (metadata) до Next.js-застосунку: title, description, openGraph, генерація metadata для окремих сторінок та динамічних маршрутів. Ознайомитися з можливостями покращення індексації пошуковими системами та підготовки контенту для соціальних мереж.</p>
+<p><strong>Виконано:</strong> вивчення розділу Adding Metadata (SEO) на nextjs.org/learn.</p>
+
+<hr>
+
+<h2>РОЗДІЛ 2. ПЕРЕНОС ПРОЕКТУ OaEdu НА NEXT.JS</h2>
+
+<h3>2.1 Вступ</h3>
+<p>У цьому розділі виконано повний перенос веб-застосунку OaEdu (React, Vite, React Router) у новий проект <strong>oaedunextjs</strong> на базі Next.js 16 з використанням App Router. Вихідний проект містив сторінки: вхід (Login), головна (HomePage), розклад (schedule), новини з категоріями та деталями, волонтерство (список та деталі), адмін-панель з 11 підрозділами (розклади, викладачі, предмети, спеціальності, ролі, кафедри, групи, типи занять, номери пар, новини, волонтерство). Захист маршрутів реалізовано через компонент ProtectedRoute та перевірку ролі Admin. Під час переносу збережено всю функціональність, перенесено API-сервіси (HttpClient, Auth, User, News, Schedule тощо), layout-и та додано SEO (metadata, robots, sitemap).</p>
+
+<h3>2.2 Створення проекту (Next.js, структура папок, конфіг)</h3>
+<p><strong>Мета:</strong><br>
+Ініціалізувати новий проект Next.js (create-next-app), налаштувати TypeScript, Tailwind CSS, структуру папок src/app, src/components, src/features, src/api, а також конфігурацію для MUI (Material-UI) та Material-NextJS. Забезпечити базові env-змінні для API.</p>
+<p><strong>Виконано:</strong> створено проект oaedunextjs з Next.js 16, React 19, налаштовано package.json, next.config, Tailwind, MUI 7 та App Router. Структура проекту:</p>
+<pre style="font-size: 11pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;">
+oaedunextjs/
+├── public/                    # статичні файли, зображення, іконки
+├── src/
+│   ├── app/                   # App Router — маршрути та layout-и Next.js
+│   │   ├── layout.tsx         # кореневий layout (html, провайдери, metadata)
+│   │   ├── globals.css        # глобальні стилі
+│   │   ├── not-found.tsx      # сторінка 404
+│   │   ├── robots.ts, sitemap.ts   # SEO
+│   │   ├── (main)/             # група маршрутів з спільним MainLayout
+│   │   │   ├── layout.tsx, page.tsx   # головна /
+│   │   │   ├── HomePage/       # /HomePage
+│   │   │   ├── schedule/       # /schedule
+│   │   │   ├── news/           # /news, /news/general, sport, events, science, culture, [category]/[slug]
+│   │   │   ├── volunteering/   # /volunteering, /volunteering/[id]
+│   │   │   └── AdminPanel/     # /AdminPanel + підсторінки (SchedulesAdmin, NewsAdmin, …)
+│   │   └── Login/              # /Login
+│   ├── components/            # переиспользуемые компоненти
+│   │   ├── layouts/           # MainLayout, NewsLayout, AdminLayout, Header, Footer
+│   │   ├── auth/              # ProtectedRoute
+│   │   └── icons/, common/
+│   ├── features/              # компоненти за сторінками/фічами
+│   │   ├── Auth/              # Login
+│   │   ├── HomePage/, SchedulePage/, NewsPage/, VolunteeringPage/
+│   │   └── AdminPage/         # SchedulesAdmin, TeacherAdmin, NewsAdmin, …
+│   ├── api/services/          # HttpClient, AuthService, UserService, NewsService, ScheduleService, …
+│   ├── providers/             # AuthContext, ThemeProvider
+│   ├── hooks/, types/, lib/, utils/
+├── package.json               # Next 16, React 19, MUI 7, Tailwind, axios, jwt-decode
+├── next.config.js, tsconfig.json, tailwind.config, postcss.config
+</pre>
+<p><strong>Коротко:</strong> <code>app/</code> визначає URL-и (файлова маршрутизація); <code>components/</code> — спільні layout-и та UI; <code>features/</code> — логіка сторінок (новини, розклад, адмінка тощо); <code>api/services/</code> — запити до бекенду; <code>providers/</code> — контексти авторизації та теми.</p>
+<p><strong>Рішення для Next.js.</strong> Щоб запити з клієнта йшли на той самий хост (уникнення CORS) та імпорт SVG як компонентів працював, у проект додано next.config.ts: rewrites перенаправляють /api/* на бекенд; webpack-правило для SVG підключає @svgr/webpack.</p>
+<p class="figcaption">Лістинг 2.А. Конфігурація Next.js — rewrites для API та webpack для SVG (додано при переносі, next.config.ts)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  reactCompiler: true,
+  async rewrites() {
+    const backendUrl = process.env.API_BACKEND_URL || "http://localhost:8000";
+    return [{ source: "/api/:path*", destination: `${backendUrl}/:path*` }];
+  },
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      use: ["@svgr/webpack"],
+    });
+    return config;
+  },
+};
+export default nextConfig;</code></pre>
+<div class="figure">
+<div class="figure-placeholder">[ Вставити скріншот: структура папок проекту (src/app, src/components, src/features) або термінал після npm run dev ]</div>
+<p class="figcaption">Рис. 2. Структура проекту oaedunextjs або запуск застосунку</p>
+</div>
+
+<h3>2.3 Інфраструктура (layout, API, HttpClient, авторизація)</h3>
+<p><strong>Мета:</strong><br>
+Реалізувати кореневий layout.tsx (html, lang="uk", провайдери), підключити globals.css, створити HttpClient для запитів до бекенду та перенести API-сервіси (AuthService, UserService). Налаштувати AuthContext та провайдер авторизації для збереження стану користувача та токена.</p>
+<p><strong>Реалізація.</strong> Кореневий layout задає мову сторінки, глобальні метадані для SEO та композицію провайдерів (MUI cache, авторизація, тема). HttpClient централізує базовий URL, таймаут та інтерцептори: на кожен запит додаються заголовки Authorization та X-User-Id; при 401 токен видаляється і виконується редірект на Login. Сервіси (Auth, User, News, Schedule тощо) використовують один екземпляр HttpClient і експортують методи get/post/put/delete.</p>
+<p><strong>Виконано:</strong> root layout з metadata та провайдерами (AppRouterCacheProvider, AuthProvider, ThemeProvider); перенесено HttpClient та сервіси Auth, User, News, Schedule, Teacher, Subject, Group, Department, Role, ClassType, ClassNumber, Specialty, Volunteering, VolunteeringCategory.</p>
+<p class="figcaption">Лістинг 1. Кореневий layout — metadata та провайдери (src/app/layout.tsx)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>import type { Metadata } from "next";
+import "./globals.css";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
+import { AuthProvider } from "@/providers/AuthContext";
+import { ThemeProvider } from "@/providers/theme/ThemeProvider";
+
+export const metadata: Metadata = {
+  title: { default: "OaEdu – ...", template: "%s | OaEdu" },
+  description: "Онлайн-платформа Острозької академії...",
+  openGraph: { title: "OaEdu – ...", locale: "uk_UA", type: "website" },
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;html lang="uk"&gt;
+      &lt;body&gt;
+        &lt;AppRouterCacheProvider&gt;
+          &lt;AuthProvider&gt;
+            &lt;ThemeProvider&gt;{children}&lt;/ThemeProvider&gt;
+          &lt;/AuthProvider&gt;
+        &lt;/AppRouterCacheProvider&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+<p class="figcaption">Лістинг 2. HttpClient — інтерцептори та методи get/post (src/api/services/HttpClient.ts, фрагмент)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>private initInterceptors() {
+  this.axiosInstance.interceptors.request.use((config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) config.headers["Authorization"] = `Bearer ${token}`;
+      const userId = getUserIdFromToken();
+      if (userId) config.headers["X-User-Id"] = userId;
+    }
+    return config;
+  }, (error) => Promise.reject(error));
+  this.axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (typeof window !== "undefined" &amp;&amp; error?.response?.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/Login";
+      }
+      return Promise.reject(error);
+    }
+  );
+}
+public async get&lt;T&gt;(url: string, config?: AxiosRequestConfig): Promise&lt;T&gt; {
+  return this.axiosInstance.get(url, config).then((r) =&gt; r.data as T);
+}</code></pre>
+
+<h3>2.4 Layout-и та ProtectedRoute</h3>
+<p><strong>Мета:</strong><br>
+Перенести layout-и з OaEdu: MainLayout (Header + Footer), NewsLayout (з категоріями новин), AdminLayout (меню адмін-панелі). Реалізувати компонент ProtectedRoute для захисту сторінок (перевірка авторизації та опційно ролі Admin). Підключити (main)/layout.tsx до MainLayout.</p>
+<p><strong>Реалізація.</strong> ProtectedRoute — клієнтський компонент ("use client"): отримує контекст авторизації та дані поточного користувача; якщо користувач не авторизований або не має потрібної ролі (наприклад, "Admin"), виконується редірект на /Login; під час завантаження показується Loader. Сторінки, що потребують захисту, обгортаються в &lt;ProtectedRoute&gt; або &lt;ProtectedRoute role="Admin"&gt;. Layout (main) лише підключає MainLayout (Header + Footer), без логіки захисту — захист реалізований на рівні окремих page.tsx або layout AdminPanel.</p>
+<p><strong>Виконано:</strong> MainLayout, MainLayoutHeader, MainLayoutFooter; NewsLayout та NewsLayoutHeader; AdminLayout та AdminLayoutHeader; ProtectedRoute з підтримкою role="Admin"; (main)/layout.tsx обгортає контент у MainLayout.</p>
+<p class="figcaption">Лістинг 3. ProtectedRoute — перевірка авторизації та ролі, редірект (src/components/auth/ProtectedRoute.tsx)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>"use client";
+const hasRole = (userRole: string, role?: string | string[]) => {
+  if (!role) return true;
+  if (Array.isArray(role)) return role.includes(userRole);
+  return userRole === role;
+};
+const ProtectedRoute = ({ role, children, redirectTo = "/Login" }) =&gt; {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { user, loading } = useCurrentUser();
+  const shouldRedirect = !loading &amp;&amp; (!isAuthenticated || !user || !hasRole(user?.role_name ?? "", role));
+  useEffect(() =&gt; { if (shouldRedirect) router.push(redirectTo); }, [shouldRedirect, redirectTo, router]);
+  if (loading) return &lt;Loader /&gt;;
+  if (shouldRedirect) return null;
+  return &lt;&gt;{children}&lt;/&gt;;
+};</code></pre>
+<p class="figcaption">Лістинг 4. Головна сторінка — використання ProtectedRoute (src/app/(main)/page.tsx)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>import HomePage from "@/features/HomePage/HomePage";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+export default function RootPage() {
+  return (
+    &lt;ProtectedRoute&gt;
+      &lt;HomePage /&gt;
+    &lt;/ProtectedRoute&gt;
+  );
+}</code></pre>
+<p class="figcaption">Лістинг 5. Layout секції (main) — композиція MainLayout (src/app/(main)/layout.tsx)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>import MainLayout from "@/components/layouts/MainLayout";
+
+export default function MainSectionLayout({ children }: { children: React.ReactNode }) {
+  return &lt;MainLayout&gt;{children}&lt;/MainLayout&gt;;
+}</code></pre>
+
+<h3>2.5 Login та волонтерство (список, деталі)</h3>
+<p><strong>Мета:</strong><br>
+Перенести сторінку входу /Login (layout + page) та публічні маршрути /volunteering та /volunteering/[id]. Адаптувати компоненти Login, VolunteeringPage та VolunteeringDetails до Next.js (Link замість NavLink, useParams для id).</p>
+<p><strong>Особливості реалізації.</strong> Сторінка Login розташована в app/Login/ і не обгортається в (main), тому має мінімальний layout без MainLayout. Для волонтерства використано динамічний сегмент [id]: у компоненті деталей оголошення id береться з useParams() замість React Router; посилання формуються через компонент Link з next/link з href /volunteering/${id}.</p>
+<p><strong>Виконано:</strong> реалізовано /Login, /volunteering, /volunteering/[id]; перенесено компоненти з OaEdu з необхідними змінами імпортів та навігації.</p>
+<p><strong>Рішення.</strong> У Next.js параметр динамічного сегмента [id] отримують через useParams() з next/navigation (замість useParams() з react-router-dom). Сторінка-обгортка лише рендерить фічу; сама фіча VolunteeringDetails читає params.id і за нього знаходить оголошення.</p>
+<p class="figcaption">Лістинг 5.А. Сторінка деталей волонтерства та фрагмент фічі — useParams з next/navigation (oaedunextjs)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>// app/(main)/volunteering/[id]/page.tsx
+"use client";
+import VolunteeringDetails from "@/features/VolunteeringPage/VolunteeringDetails";
+export default function VolunteeringDetailsRoute() {
+  return &lt;VolunteeringDetails /&gt;;
+}
+
+// У VolunteeringDetails.tsx — отримання id з URL:
+import { useParams, useRouter } from "next/navigation";
+const params = useParams&lt;{ id: string }&gt;();
+useEffect(() =&gt; {
+  if (params?.id) {
+    const item = dataSource.find((x) =&gt; x.id === params.id) || null;
+    setData(item);
+  }
+}, [params?.id]);</code></pre>
+<div class="figure">
+<div class="figure-placeholder">[ Вставити скріншот: сторінка входу (Login) або сторінка волонтерства (список або деталі) ]</div>
+<p class="figcaption">Рис. 3. Сторінка входу або розділ «Волонтерство»</p>
+</div>
+
+<h3>2.6 Новини (категорії та динамічна сторінка)</h3>
+<p><strong>Мета:</strong><br>
+Перенести розділ новин: layout для /news, сторінки /news, /news/general, /news/sport, /news/events, /news/science, /news/culture та динамічний маршрут /news/[category]/[slug] для деталей новини. Перенести компоненти GeneralNews, SportNews, EventsNews, ScienceNews, CultureNews та NewsDetails з підтримкою params та searchParams у Next.js.</p>
+<p><strong>Реалізація.</strong> Кожна категорія новин має власну папку під app/(main)/news/ з page.tsx. Деталі новини обслуговуються одним динамічним маршрутом news/[category]/[slug]/page.tsx: компонент отримує params (category, slug) і за потреби викликає API для отримання статті за slug; дані більше не передаються через location.state, як у React Router, що відповідає ідіоматичному підходу Next.js до динамічних сторінок.</p>
+<p><strong>Виконано:</strong> реалізовано всі маршрути новин; NewsDetails адаптовано до отримання даних з URL/params замість location.state.</p>
+<p><strong>Рішення.</strong> Деталі новини обслуговуються динамічним маршрутом news/[category]/[slug]/page.tsx; компонент NewsDetails отримує дані через пропси або useSearchParams() з next/navigation (замість location.state з React Router), що дозволяє коректно відкривати статтю за посиланням.</p>
+<p class="figcaption">Лістинг 6.А. Динамічний маршрут деталей новини та фрагмент NewsDetails — useSearchParams (oaedunextjs)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>// app/(main)/news/[category]/[slug]/page.tsx
+"use client";
+import NewsDetails from "@/features/NewsPage/NewsDetails";
+export default function NewsDetailsRoute() {
+  return &lt;NewsDetails /&gt;;
+}
+
+// У NewsDetails.tsx — дані з URL (пропси або searchParams):
+import { useRouter, useSearchParams } from "next/navigation";
+const params = useSearchParams();
+const title = props.title ?? params.get("title") ?? undefined;
+const content = props.content ?? params.get("content") ?? undefined;</code></pre>
+<div class="figure">
+<div class="figure-placeholder">[ Вставити скріншот: сторінка новин (категорії) або деталі однієї новини ]</div>
+<p class="figcaption">Рис. 4. Розділ «Новини» або сторінка деталей новини</p>
+</div>
+
+<h3>2.7 Головна та розклад (захищені сторінки)</h3>
+<p><strong>Мета:</strong><br>
+Перенести захищені сторінки: головну / та /HomePage, розклад /schedule. Обгорнути їх у ProtectedRoute. Перенести компоненти HomePage, SchedulePage та допоміжні (ScheduleTable, ScheduleFilters, ScheduleNavigation, ScheduleDays тощо).</p>
+<p><strong>Рішення.</strong> Кожна захищена сторінка — окремий page.tsx, який обгортає фічу в &lt;ProtectedRoute&gt;; логіка однакова для головної та розкладу. Розклад не експортує серверні дані; сторінка клієнтська за потреби (SchedulePage сам робить запити).</p>
+<p><strong>Виконано:</strong> (main)/page.tsx та /HomePage/page.tsx відображають HomePage з ProtectedRoute; /schedule — SchedulePage з ProtectedRoute; перенесено всі пов'язані компоненти.</p>
+<p class="figcaption">Лістинг 7.А. Сторінка розкладу — захист через ProtectedRoute (oaedunextjs, src/app/(main)/schedule/page.tsx)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>import SchedulePage from "@/features/SchedulePage/SchedulePage";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+export default function ScheduleRoute() {
+  return (
+    &lt;ProtectedRoute&gt;
+      &lt;SchedulePage /&gt;
+    &lt;/ProtectedRoute&gt;
+  );
+}</code></pre>
+
+<h3>2.8 AdminPanel та всі підсторінки</h3>
+<p><strong>Мета:</strong><br>
+Перенести адмін-панель: layout /AdminPanel з ProtectedRoute role="Admin", сторінки SchedulesAdmin, TeacherAdmin, SubjectAdmin, SpecialtyAdmin, RoleAdmin, DepartmentAdmin, GroupAdmin, ClassTypeAdmin, ClassNumberAdmin, NewsAdmin, VolunteeringAdmin. Зберегти інтеграцію з відповідними API-сервісами та useEntityDetails.</p>
+<p><strong>Процес реалізації.</strong> Layout AdminPanel обгортає контент у AdminLayout (меню з посиланнями на підсторінки) та в &lt;ProtectedRoute role="Admin"&gt;, тому доступ мають лише авторизовані користувачі з роллю Admin. Кожен підрозділ (наприклад, SchedulesAdmin, NewsAdmin) розміщено в окремій папці з page.tsx; компоненти повторно використовують спільний хук useEntityDetails для відображення деталей сутностей у діалозі та той самий набір API-сервісів, що й у вихідному OaEdu.</p>
+<p><strong>Виконано:</strong> реалізовано AdminPanel layout та усі 11 підсторінок у структурі app/(main)/AdminPanel/... з окремими page.tsx; перенесено компоненти з OaEdu.</p>
+<p><strong>Рішення.</strong> Доступ до всієї адмін-панелі захищається одним layout: AdminPanel/layout.tsx обгортає контент у &lt;ProtectedRoute role="Admin"&gt; і в AdminLayout (меню). Усі підсторінки автоматично захищені без дублювання перевірки в кожному page.</p>
+<p class="figcaption">Лістинг 8.А. Layout адмін-панелі — захист за роллю Admin (oaedunextjs, src/app/(main)/AdminPanel/layout.tsx)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>"use client";
+
+import React from "react";
+import AdminLayout from "@/components/layouts/AdminLayout";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+export default function AdminSectionLayout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;ProtectedRoute role="Admin"&gt;
+      &lt;AdminLayout&gt;{children}&lt;/AdminLayout&gt;
+    &lt;/ProtectedRoute&gt;
+  );
+}</code></pre>
+<div class="figure">
+<div class="figure-placeholder">[ Вставити скріншот: адмін-панель (меню або одна з підсторінок, наприклад Розклади або Новини) ]</div>
+<p class="figcaption">Рис. 5. Адмін-панель проекту oaedunextjs</p>
+</div>
+
+<h3>2.9 SEO (metadata, robots, sitemap) та виправлення</h3>
+<p><strong>Мета:</strong><br>
+Додати глобальні metadata в root layout (title, description, openGraph, locale); metadata для окремих розділів (Новини, Волонтерство, Вхід). Створити robots.ts (allow/disallow, sitemap) та sitemap.ts з основними URL. Виконати виправлення з плану перевірки міграції (ProtectedRoute для /, GeneralNews, NewsDetails, Login).</p>
+<p><strong>Реалізація.</strong> У вихідному OaEdu (Vite + React) не було вбудованої підтримки metadata, robots.txt та sitemap; це додано саме в oaedunextjs за рахунок можливостей Next.js App Router. Нижче наведено код, який було додано при переносі: файли robots.ts та sitemap.ts у src/app/ (Next.js автоматично обслуговує маршрути /robots.txt та /sitemap.xml), а також приклад metadata для окремого розділу (Login).</p>
+<p><strong>Виконано:</strong> у layout.tsx задано title (template "%s | OaEdu"), description, openGraph; у відповідних layout — metadata для Новини, Волонтерство, Login; додано robots.ts та sitemap.ts; виправлено відображення контенту згідно MIGRATION_VERIFICATION_PLAN.</p>
+<p class="figcaption">Лістинг 6. Файл robots — правила для пошукових роботів (додано в oaedunextjs, src/app/robots.ts)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>import type { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: ["/", "/HomePage", "/schedule", "/news", "/volunteering"],
+      disallow: ["/admin", "/AdminPanel"],
+    },
+    sitemap: "https://example.com/sitemap.xml",
+  };
+}</code></pre>
+<p class="figcaption">Лістинг 7. Файл sitemap — перелік URL для індексації (додано в oaedunextjs, src/app/sitemap.ts)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>import type { MetadataRoute } from "next";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = "https://example.com";
+  return [
+    { url: `${baseUrl}/`, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
+    { url: `${baseUrl}/HomePage`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${baseUrl}/schedule`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
+    { url: `${baseUrl}/news`, lastModified: new Date(), changeFrequency: "hourly", priority: 0.8 },
+    { url: `${baseUrl}/volunteering`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
+    { url: `${baseUrl}/Login`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+  ];
+}</code></pre>
+<p class="figcaption">Лістинг 8. Metadata для розділу «Вхід» — приклад доданого для окремого маршруту (oaedunextjs, src/app/Login/layout.tsx)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Вхід",
+  description: "Увійдіть до освітньої платформи OaEdu Острозької академії.",
+};
+
+export default function LoginLayout({ children }: { children: React.ReactNode }) {
+  return &lt;&gt;{children}&lt;/&gt;;
+}</code></pre>
+
+<h3>2.10 Перевірка та тестування</h3>
+<p><strong>Мета:</strong><br>
+Перевірити відповідність усіх маршрутів OaEdu та oaedunextjs, роботу захисту та ролей, коректність відображення сторінок. Підготувати документування (README, план перевірки міграції, звіт).</p>
+<p><strong>Рішення.</strong> У Next.js App Router сторінка 404 реалізується через файл not-found.tsx в корені app/. Додано кастомну сторінку з useRouter з next/navigation та кнопкою повернення — при неіснуючому маршруті користувач бачить стилізовану 404 замість стандартної.</p>
+<p><strong>Виконано:</strong> порівняно маршрути, перевірено ProtectedRoute та AdminPanel; оновлено/створено документацію та звіт; додано not-found.tsx для обробки 404.</p>
+<p class="figcaption">Лістинг 10.А. Кастомна сторінка 404 — not-found.tsx (oaedunextjs, src/app/not-found.tsx, фрагмент)</p>
+<pre style="font-size: 10pt; background: #f5f5f5; padding: 10pt; overflow-x: auto;"><code>"use client";
+
+import React from "react";
+import { Box, Typography, Button } from "@mui/material";
+import { useRouter } from "next/navigation";
+
+export default function NotFound() {
+  const router = useRouter();
+  return (
+    &lt;Box sx={{ width: "100%", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", ... }}&gt;
+      &lt;Typography variant="h4"&gt;Сторінку не знайдено&lt;/Typography&gt;
+      &lt;Button onClick={() =&gt; router.push("/")}&gt;На головну&lt;/Button&gt;
+    &lt;/Box&gt;
+  );
+}</code></pre>
+
+<hr>
+
+<h2>ВИСНОВОК</h2>
+
+<p>Під час проходження практики я отримав досвід у вивченні Next.js за офіційним курсом Learn Next.js та повному переносі веб-застосунку OaEdu з React (Vite) на Next.js.</p>
+
+<p>У звіті описані предметне середовище (система OaEdu, користувачі, функціональна модель та процес діяльності) та архітектура рішення oaedunextjs (App Router, маршрутизація, layout-и, захист маршрутів, сервісний шар API). Листинги коду ілюструють кореневий layout, HttpClient з інтерцепторами, компонент ProtectedRoute та приклад захищеної сторінки.</p>
+
+<p>У Розділі 1 я ознайомився з платформою <a href="https://nextjs.org/learn">nextjs.org/learn</a>: основами React (React Foundations), файловою маршрутизацією (App Router), класичним Pages Router та додаванням метаданих для SEO. Це заклало основу для подальшої роботи над проектом на Next.js.</p>
+
+<p>У Розділі 2 виконано повний перенос проекту: створено структуру Next.js-проекту, перенесено інфраструктуру (layout, API, авторизацію), layout-и та ProtectedRoute, усі публічні та захищені сторінки (Login, волонтерство, новини, головна, розклад), адмін-панель з усіма підсторінками, а також налаштовано SEO (metadata, robots, sitemap) та виправлення згідно з планом перевірки. Роутер повністю відповідає старому проекту; захист маршрутів та роль Admin збережені.</p>
+
+<p>Практика дозволила закріпити навички роботи з Next.js, App Router, TypeScript, MUI та інтеграції з бекенд-API, а також підготувати проект до подальшого розгортання та підтримки.</p>
+
+<hr>
+
+<h2>СПИСОК ВИКОРИСТАНИХ ДЖЕРЕЛ</h2>
+<p>1. Learn Next.js. (n.d.). Start building with Next.js. Retrieved from <a href="https://nextjs.org/learn">https://nextjs.org/learn</a></p>
+<p>2. Next.js Documentation. (2026). App Router, Routing, Metadata. Retrieved from <a href="https://nextjs.org/docs">https://nextjs.org/docs</a></p>
+<p>3. React Documentation. (2026). React Docs. Retrieved from <a href="https://react.dev">https://react.dev</a></p>
+<p>4. Vercel. (2026). Next.js by Vercel. Retrieved from <a href="https://nextjs.org">https://nextjs.org</a></p>
+<p>5. MUI Material-UI. (2026). Material UI for React. Retrieved from <a href="https://mui.com/material-ui">https://mui.com/material-ui</a></p>
+<p>6. OaEdu (React, Vite) — вихідний проект репозиторію OaEduUa_React.</p>
+
+<hr>
+
+<h2>ГРАФІК ПРОХОДЖЕННЯ ПРАКТИКИ ВИРОБНИЧОЇ ПРОФЕСІЙНО-ОРІЄНТОВАНОЇ</h2>
+<p>здобувача 4 курсу першого (бакалаврського) рівня вищої освіти<br>
+освітньої програми «Комп'ютерні науки» група КН-42</p>
+<p><strong>Тарасюк Дмитро</strong><br>
+<em>(власне ім'я та прізвище)</em></p>
+
+<table>
+<tr><th>№ з/п</th><th>Дата</th><th>Назви робіт</th><th>Відмітки про виконання</th></tr>
+<tr><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+<tr><td>1</td><td>26.01.2026 – 08.02.2026</td><td>https://nextjs.org/learn</td><td>Виконано</td></tr>
+<tr><td>2</td><td>26.01.2026 – 28.01.2026</td><td>React Foundations</td><td>Виконано</td></tr>
+<tr><td>3</td><td>29.01.2026 – 31.01.2026</td><td>App Router</td><td>Виконано</td></tr>
+<tr><td>4</td><td>01.02.2026 – 03.02.2026</td><td>Pages Router</td><td>Виконано</td></tr>
+<tr><td>5</td><td>04.02.2026 – 08.02.2026</td><td>SEO</td><td>Виконано</td></tr>
+<tr><td>6</td><td>09.02.2026</td><td>Створив проект (Next.js, структура папок, конфіг)</td><td>Виконано</td></tr>
+<tr><td>7</td><td>10.02.2026 – 11.02.2026</td><td>Інфраструктура (layout, API, HttpClient, авторизація)</td><td>Виконано</td></tr>
+<tr><td>8</td><td>12.02.2026</td><td>Layout-и та ProtectedRoute</td><td>Виконано</td></tr>
+<tr><td>9</td><td>13.02.2026</td><td>Login та волонтерство (список, деталі)</td><td>Виконано</td></tr>
+<tr><td>10</td><td>14.02.2026</td><td>Новини (категорії та динамічна сторінка)</td><td>Виконано</td></tr>
+<tr><td>11</td><td>15.02.2026</td><td>Головна та розклад (захищені сторінки)</td><td>Виконано</td></tr>
+<tr><td>12</td><td>16.02.2026</td><td>AdminPanel та всі підсторінки</td><td>Виконано</td></tr>
+<tr><td>13</td><td>17.02.2026</td><td>SEO (metadata, robots, sitemap) та виправлення</td><td>Виконано</td></tr>
+<tr><td>14</td><td>17.02.2026 – 18.02.2026</td><td>Перевірка та тестування</td><td>Виконано</td></tr>
+<tr><td>15</td><td>18.02.2026</td><td>Написання звіту</td><td>Виконано</td></tr>
+</table>
+
+<p class="signature">Керівник від бази практики _____________________ <strong>Денис МАЦЕВИЧ</strong><br>
+М.П. (підпис) (власне ім'я та прізвище)</p>
+
+</body>
+</html>
