@@ -23,9 +23,20 @@ const NewsDetails: React.FC<NewsDetailsProps> = (props) => {
   const title = props.title ?? params.get("title") ?? undefined;
   const description = props.description ?? params.get("description") ?? undefined;
   const content = props.content ?? params.get("content") ?? undefined;
-  const meta = props.meta ?? params.get("meta") ?? undefined;
+  const rawMeta = props.meta ?? params.get("meta") ?? undefined;
   const faculty = props.faculty ?? params.get("faculty") ?? undefined;
   const chatImage = props.chatImage ?? params.get("chatImage") ?? undefined;
+
+  const formattedMeta =
+    rawMeta && !Number.isNaN(Date.parse(rawMeta))
+      ? new Date(rawMeta).toLocaleString("uk-UA", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : rawMeta;
 
   if (!title) {
     router.back();
@@ -53,7 +64,8 @@ const NewsDetails: React.FC<NewsDetailsProps> = (props) => {
             color="text.primary"
             sx={{ mb: 2, display: "block" }}
           >
-            {meta || "Fri, May 23, 2025 at 11:23 PM GMT+3 · 3 min read"}
+            {formattedMeta ||
+              "Fri, May 23, 2025 at 11:23 PM GMT+3 · 3 min read"}
           </Typography>
         </Box>
         <Box display={"flex"} alignItems={"center"}>

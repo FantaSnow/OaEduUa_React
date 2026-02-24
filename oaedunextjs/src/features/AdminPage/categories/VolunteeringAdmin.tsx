@@ -563,7 +563,29 @@ const VolunteeringAdmin: React.FC = () => {
                       {vol.goal ?? "—"}
                     </TableCell>
                     <TableCell>
-                      {vol.volunteeringcategory?.name ?? vol.volunteeringcategory_id ?? "—"}
+                      {vol.volunteeringcategory_id ? (
+                        <span
+                          style={{
+                            color: "#1976d2",
+                            cursor: "pointer",
+                            textDecoration: "underline",
+                          }}
+                          onClick={() =>
+                            entityDetails.showDetails(
+                              "Категорія волонтерства",
+                              VolunteeringCategoryService,
+                              vol.volunteeringcategory_id
+                            )
+                          }
+                        >
+                          {vol.volunteeringcategory_id}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                      {vol.volunteeringcategory?.name
+                        ? ` — ${vol.volunteeringcategory.name}`
+                        : ""}
                     </TableCell>
                     <TableCell>
                       <Button

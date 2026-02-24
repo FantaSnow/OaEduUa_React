@@ -26,7 +26,6 @@ export class HttpClient {
         "/api",
       timeout: configs.timeout || 30000,
       headers: {
-        "Content-Type": "application/json",
         Accept: "application/json",
         ...configs.headers,
       },

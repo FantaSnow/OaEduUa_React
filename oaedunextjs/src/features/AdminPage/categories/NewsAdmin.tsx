@@ -677,6 +677,7 @@ const NewsAdmin: React.FC = () => {
                   <TableCell>ID</TableCell>
                   <TableCell>Назва</TableCell>
                   <TableCell>Опис</TableCell>
+                  <TableCell>Автор</TableCell>
                   <TableCell>Категорія</TableCell>
                   <TableCell>Кафедра</TableCell>
                   <TableCell>Головне зображення</TableCell>
@@ -704,6 +705,13 @@ const NewsAdmin: React.FC = () => {
                     <TableCell>{news.name}</TableCell>
                     <TableCell sx={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis" }}>
                       {news.description ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      {news.users
+                        ? `${news.users.name}${
+                            news.users.email ? ` (${news.users.email})` : ""
+                          }`
+                        : news.user_id ?? "—"}
                     </TableCell>
                     <TableCell>
                       {news.newscategory?.name ?? news.newscategory_id ?? "—"}

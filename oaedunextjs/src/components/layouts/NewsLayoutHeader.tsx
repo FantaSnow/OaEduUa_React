@@ -4,19 +4,28 @@ import React, { useEffect, useRef, useState } from "react";
 import { Box, Button } from "@mui/material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const categories = [
-  { label: "Загальні", path: "general" },
-  { label: "Спорт", path: "sport" },
-  { label: "Події", path: "events" },
-  { label: "Наука", path: "science" },
-  { label: "Культура", path: "culture" },
-];
+import NewsCategoryService from "@/api/services/NewsCategoryService";
+import type { NewsCategory } from "@/types/entities";
+import { unwrapApiResponse } from "@/types/api.types";
 
 const NewsLayoutHeader: React.FC = () => {
   const [show, setShow] = useState(true);
   const lastScroll = useRef(0);
   const pathname = usePathname();
+  const [categories, setCategories] = useState<NewsCategory[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const resp = await NewsCategoryService.getAll(0, 50);
+        setCategories(unwrapApiResponse(resp) ?? []);
+      } catch {
+        setCategories([]);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,10 +71,13 @@ const NewsLayoutHeader: React.FC = () => {
             height: "100%",
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             bgcolor: "primary.primary10",
             borderRadius: "20px",
-            px: 3,
+            px: { xs: 1.5, sm: 3 },
+            py: 0.5,
             gap: 1,
+            flexWrap: "wrap",
             "& .active": {
               position: "relative",
               color: "text.primary",
@@ -84,10 +96,11 @@ const NewsLayoutHeader: React.FC = () => {
             "& a": {
               position: "relative",
               textDecoration: "none",
-              minWidth: 0,
+                minWidth: 0,
               px: 2,
               py: 0.5,
               transition: "color 0.2s, background 0.2s",
+                whiteSpace: "nowrap",
               "&:hover": {
                 color: "text.primary",
                 backgroundColor: "primary.primary10",
@@ -108,12 +121,31 @@ const NewsLayoutHeader: React.FC = () => {
             },
           }}
         >
+          {/* Загальні (усі новини) */}
+          <Link href="/news">
+            <Button
+              className={pathname === "/news" ? "active" : ""}
+              sx={{
+                bgcolor: "transparent",
+                textTransform: "none",
+                fontSize: "1rem",
+                minWidth: 0,
+                padding: 0,
+                "&:hover": {
+                  bgcolor: "transparent",
+                },
+              }}
+            >
+              Загальні
+            </Button>
+          </Link>
+
+          {/* Динамічні категорії з бекенду */}
           {categories.map((cat) => {
-            const isActive =
-              pathname === `/news/${cat.path}` ||
-              (pathname === "/news" && cat.path === "general");
+            const href = `/news/${encodeURIComponent(cat.name)}`;
+            const isActive = pathname === href;
             return (
-              <Link key={cat.path} href={`/news/${cat.path}`}>
+              <Link key={cat.id} href={href}>
                 <Button
                   className={isActive ? "active" : ""}
                   sx={{
@@ -127,7 +159,7 @@ const NewsLayoutHeader: React.FC = () => {
                     },
                   }}
                 >
-                  {cat.label}
+                  {cat.name}
                 </Button>
               </Link>
             );

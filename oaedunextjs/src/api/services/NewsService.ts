@@ -43,17 +43,23 @@ class NewsService {
 
   async create(data: NewsCreateDto): Promise<NewsEntity> {
     const formData = new FormData();
-    formData.append("name", data.name.trim());
-    formData.append("desc", data.desc.trim());
-    formData.append("categ", String(data.categ));
-    formData.append("depart", String(data.depart));
     formData.append("main_image", data.main_image);
     if (data.gallery_images?.length) {
       data.gallery_images.forEach((file) =>
         formData.append("gallery_images", file)
       );
     }
-    return http.post<NewsEntity>("/news/create", formData);
+    return http.post<NewsEntity>("/news/create", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      params: {
+        name: data.name.trim(),
+        desc: data.desc.trim(),
+        categ: data.categ,
+        depart: data.depart,
+      },
+    });
   }
 
   async update(newsData: NewsUpdateDto): Promise<NewsEntity> {

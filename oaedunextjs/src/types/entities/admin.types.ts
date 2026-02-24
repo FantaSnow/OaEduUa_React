@@ -98,6 +98,7 @@ export interface NewsEntity {
   newscategory_id: number;
   department_id: number;
   user_id?: number;
+  created_at?: string;
   photo_path?: string | null;
   gallery_photos?: NewsGalleryItem[];
   newscategory?: { id: number; name: string };
