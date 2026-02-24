@@ -4,12 +4,17 @@ import type { GroupEntity } from "@/types/entities";
 
 const http = new HttpClient({});
 
+/** Відповідає GroupCreate (GroupBase): name, specialty_id обов'язкові */
 export interface GroupCreateDto {
   name: string;
-  specialty_id?: number;
+  specialty_id: number;
 }
 
-export interface GroupUpdateDto extends GroupEntity {}
+/** Відповідає GroupUpdate: тільки id та name */
+export interface GroupUpdateDto {
+  id: number;
+  name: string;
+}
 
 class GroupService {
   async getAll(skip = 0, limit = 10): Promise<ApiResponse<GroupEntity>> {

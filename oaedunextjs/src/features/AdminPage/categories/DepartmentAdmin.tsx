@@ -301,7 +301,7 @@ const DepartmentAdmin: React.FC = () => {
       >
         <DialogTitle>{entityDetails.modalTitle}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component="div">
             <pre style={{ fontSize: 14, whiteSpace: "pre-wrap" }}>
               {entityDetails.loading
                 ? "Завантаження..."

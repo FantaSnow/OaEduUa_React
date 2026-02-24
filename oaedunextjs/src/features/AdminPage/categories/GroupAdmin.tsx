@@ -83,17 +83,28 @@ const GroupAdmin: React.FC = () => {
   }, []);
 
   const handleSave = async () => {
+    const name = String(newGroup.name ?? "").trim();
+    const specialty_id =
+      newGroup.specialty_id === "" || newGroup.specialty_id == null
+        ? undefined
+        : Number(newGroup.specialty_id);
+    const validSpecialtyId =
+      specialty_id !== undefined && !Number.isNaN(specialty_id)
+        ? specialty_id
+        : undefined;
+
     setLoading(true);
     setError(null);
     try {
-      const payload = {
-        name: String(newGroup.name),
-        specialty_id: Number(newGroup.specialty_id) || undefined,
-      };
       if (editingId !== null) {
-        await GroupService.update({ ...payload, id: editingId });
+        await GroupService.update({ id: editingId, name });
       } else {
-        await GroupService.create(payload);
+        if (validSpecialtyId === undefined) {
+          setError("Оберіть спеціальність");
+          setLoading(false);
+          return;
+        }
+        await GroupService.create({ name, specialty_id: validSpecialtyId });
       }
       setNewGroup(emptyGroup);
       setEditingId(null);
@@ -182,17 +193,23 @@ const GroupAdmin: React.FC = () => {
           >
             <InputLabel>Спеціальність</InputLabel>
             <Select
-              value={newGroup.specialty_id}
+              value={
+                newGroup.specialty_id === "" || newGroup.specialty_id == null
+                  ? ""
+                  : String(newGroup.specialty_id)
+              }
               label="Спеціальність"
               onChange={(e) =>
                 setNewGroup({
                   ...newGroup,
-                  specialty_id: e.target.value,
+                  specialty_id:
+                    e.target.value === "" ? "" : Number(e.target.value),
                 })
               }
             >
+              <MenuItem value="">— не обрано —</MenuItem>
               {specialties.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
+                <MenuItem key={s.id} value={String(s.id)}>
                   {s.name} ({s.specialty_number}) - id: {s.id}
                 </MenuItem>
               ))}
@@ -268,12 +285,17 @@ const GroupAdmin: React.FC = () => {
                 <FormControl sx={{ minWidth: 180, mr: 2 }} size="small">
                   <InputLabel>Спеціальність</InputLabel>
                   <Select
-                    value={findSpecialtyId}
+                    value={
+                      findSpecialtyId === "" || findSpecialtyId == null
+                        ? ""
+                        : String(findSpecialtyId)
+                    }
                     label="Спеціальність"
                     onChange={(e) => setFindSpecialtyId(e.target.value)}
                   >
+                    <MenuItem value="">— не обрано —</MenuItem>
                     {specialties.map((s) => (
-                      <MenuItem key={s.id} value={s.id}>
+                      <MenuItem key={s.id} value={String(s.id)}>
                         {s.name} ({s.specialty_number}) - id: {s.id}
                       </MenuItem>
                     ))}
@@ -371,7 +393,7 @@ const GroupAdmin: React.FC = () => {
       >
         <DialogTitle>{entityDetails.modalTitle}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component="div">
             <pre style={{ fontSize: 14, whiteSpace: "pre-wrap" }}>
               {entityDetails.loading
                 ? "Завантаження..."

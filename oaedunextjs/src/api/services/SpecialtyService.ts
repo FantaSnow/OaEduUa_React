@@ -4,13 +4,20 @@ import type { Specialty } from "@/types/entities";
 
 const http = new HttpClient({});
 
+/** Відповідає SpecialtyCreate: name, specialty_number (int), department_id (int) */
 export interface SpecialtyCreateDto {
   name: string;
-  specialty_number?: string;
-  department_id?: number;
+  specialty_number: number;
+  department_id: number;
 }
 
-export interface SpecialtyUpdateDto extends Specialty {}
+/** Відповідає SpecialtyUpdate */
+export interface SpecialtyUpdateDto {
+  id: number;
+  name: string;
+  specialty_number: number;
+  department_id: number;
+}
 
 class SpecialtyService {
   async getAll(skip = 0, limit = 10): Promise<ApiResponse<Specialty>> {

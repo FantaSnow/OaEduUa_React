@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
-import type { ChangeEvent } from "react";
+import React, { useEffect, useState, useMemo, type ChangeEvent } from "react";
 import {
   Box,
   Typography,
@@ -23,40 +22,53 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import NewsService from "@/api/services/NewsService";
+import NewsService, {
+  type NewsCreateDto,
+  type NewsUpdateDto,
+} from "@/api/services/NewsService";
+import NewsCategoryService, {
+  type NewsCategoryCreateDto,
+  type NewsCategoryUpdateDto,
+} from "@/api/services/NewsCategoryService";
 import DepartmentService from "@/api/services/DepartmentService";
 import { useEntityDetails } from "@/hooks/useEntityDetails";
 import { useTheme } from "@mui/material/styles";
 import { unwrapApiResponse } from "@/types/api.types";
-import type { NewsEntity, Department } from "@/types/entities";
+import type { NewsEntity, NewsCategory, Department } from "@/types/entities";
+import { getNewsImageUrl } from "@/utils/newsImage";
 
-const emptyNews = {
-  id: 0,
+const emptyCategory: NewsCategoryCreateDto = { name: "" };
+
+const emptyNewsForm = {
   name: "",
   description: "",
-  category: "",
-  department_id: "",
-  user_id: "",
-  main_image_path: "",
+  newscategory_id: "" as "" | number,
+  department_id: "" as "" | number,
   main_image_file: null as File | null,
-  gallery_photos: [] as string[],
   gallery_files: [] as File[],
-  users: { id: 0, name: "", email: "" },
-  department: { name: "", id: 0 },
 };
 
-type NewsField = keyof typeof emptyNews;
+type NewsFormState = typeof emptyNewsForm;
 
 const NewsAdmin: React.FC = () => {
   const theme = useTheme();
-  const [newsList, setNewsList] = useState<NewsEntity[]>([]);
+  const [tab, setTab] = useState(0);
+
+  const [categories, setCategories] = useState<NewsCategory[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [newsList, setNewsList] = useState<NewsEntity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newNews, setNewNews] = useState<typeof emptyNews>(emptyNews);
-  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const [categoryName, setCategoryName] = useState("");
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+
+  const [newsForm, setNewsForm] = useState<NewsFormState>(emptyNewsForm);
+  const [editingNewsId, setEditingNewsId] = useState<number | null>(null);
 
   const [tableMode, setTableMode] = useState<"all" | "search">("all");
   const [searchType, setSearchType] = useState<"id" | "name">("id");
@@ -66,18 +78,41 @@ const NewsAdmin: React.FC = () => {
 
   const entityDetails = useEntityDetails<NewsEntity>();
 
-  useEffect(() => {
-    DepartmentService.getAll(0, 100).then((res) =>
-      setDepartments(unwrapApiResponse(res))
-    );
-  }, []);
+  const fetchCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await NewsCategoryService.getAll(0, 200);
+      setCategories(unwrapApiResponse(data) ?? []);
+    } catch (e) {
+      setCategories([]);
+      const msg =
+        e && typeof e === "object" && "response" in e
+          ? (e as { response?: { status?: number } }).response?.status === 404
+            ? "Категорії не знайдено (404). Перевірте шлях до API категорій новин."
+            : "Помилка завантаження категорій"
+          : "Помилка завантаження категорій";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const data = await DepartmentService.getAll(0, 200);
+      setDepartments(unwrapApiResponse(data) ?? []);
+    } catch {
+      setDepartments([]);
+    }
+  };
 
   const fetchNews = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await NewsService.getAll(0, 100);
-      setNewsList(unwrapApiResponse(data));
+      const data = await NewsService.getAll(0, 200);
+      setNewsList(unwrapApiResponse(data) ?? []);
     } catch {
       setError("Помилка завантаження новин");
     } finally {
@@ -86,82 +121,143 @@ const NewsAdmin: React.FC = () => {
   };
 
   useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  useEffect(() => {
     fetchNews();
   }, []);
 
-  const handleMainImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setNewNews({
-        ...newNews,
-        main_image_file: e.target.files[0],
-        main_image_path: "",
-      });
-    }
-  };
-
-  const handleGalleryImagesChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setNewNews({
-        ...newNews,
-        gallery_files: Array.from(e.target.files),
-        gallery_photos: [],
-      });
-    }
-  };
-
-  const handleSave = async () => {
+  const handleSaveCategory = async () => {
+    if (!categoryName.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      let payload: Record<string, unknown> | FormData = { ...newNews };
-      if (
-        newNews.main_image_file ||
-        (newNews.gallery_files && newNews.gallery_files.length > 0)
-      ) {
-        const formData = new FormData();
-        formData.append("name", newNews.name);
-        formData.append("description", newNews.description);
-        formData.append("category", newNews.category);
-        formData.append("department_id", newNews.department_id);
-        formData.append("user_id", newNews.user_id);
-        if (newNews.main_image_file) {
-          formData.append("main_image", newNews.main_image_file);
-        }
-        if (newNews.gallery_files && newNews.gallery_files.length > 0) {
-          newNews.gallery_files.forEach((file: File) =>
-            formData.append("gallery_images", file)
-          );
-        }
-        payload = formData;
+      if (editingCategoryId !== null) {
+        await NewsCategoryService.update({
+          id: editingCategoryId,
+          name: categoryName.trim(),
+        } as NewsCategoryUpdateDto);
       } else {
-        payload.gallery_photos = newNews.gallery_photos;
+        await NewsCategoryService.create({ name: categoryName.trim() });
       }
-
-      if (editingId !== null) {
-        if (payload instanceof FormData) {
-          payload.append("id", String(editingId));
-          await NewsService.update(payload);
-        } else {
-          await NewsService.update({ ...payload, id: editingId });
-        }
-      } else {
-        await NewsService.create(payload);
-      }
-      setNewNews(emptyNews);
-      setEditingId(null);
+      setCategoryName("");
+      setEditingCategoryId(null);
+      await fetchCategories();
       await fetchNews();
     } catch {
       setError(
-        editingId !== null
-          ? "Помилка оновлення новини"
-          : "Помилка створення новини"
+        editingCategoryId !== null
+          ? "Помилка оновлення категорії"
+          : "Помилка створення категорії (можливо, така назва вже є)"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDeleteCategory = async (id: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await NewsCategoryService.delete(id);
+      await fetchCategories();
+      await fetchNews();
+    } catch {
+      setError("Помилка видалення категорії");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toNewsCreateDto = (form: NewsFormState): NewsCreateDto => ({
+    name: form.name.trim(),
+    desc: form.description.trim(),
+    categ: form.newscategory_id === "" ? 0 : Number(form.newscategory_id),
+    depart: form.department_id === "" ? 0 : Number(form.department_id),
+    main_image: form.main_image_file!,
+    gallery_images: form.gallery_files.length ? form.gallery_files : undefined,
+  });
+
+  const toNewsUpdateDto = (form: NewsFormState, id: number): NewsUpdateDto => {
+    const nid = Number(form.newscategory_id);
+    const did = Number(form.department_id);
+    return {
+      id: Number(id),
+      name: (form.name ?? "").trim(),
+      description: (form.description ?? "").trim(),
+      newscategory_id: (form.newscategory_id !== "" && !Number.isNaN(nid)) ? nid : 0,
+      department_id: (form.department_id !== "" && !Number.isNaN(did)) ? did : 0,
+    };
+  };
+
+  const handleSaveNews = async () => {
+    if (!newsForm.name.trim()) return;
+    if (editingNewsId === null) {
+      if (!newsForm.main_image_file) {
+        setError("Оберіть головне зображення для нової новини");
+        return;
+      }
+      const categ = newsForm.newscategory_id === "" ? 0 : Number(newsForm.newscategory_id);
+      const depart = newsForm.department_id === "" ? 0 : Number(newsForm.department_id);
+      if (!categ || !depart) {
+        setError("Оберіть категорію та кафедру");
+        return;
+      }
+    } else {
+      const categ = newsForm.newscategory_id === "" ? 0 : Number(newsForm.newscategory_id);
+      const depart = newsForm.department_id === "" ? 0 : Number(newsForm.department_id);
+      if (!categ || !depart) {
+        setError("Оберіть категорію та кафедру для оновлення");
+        return;
+      }
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      if (editingNewsId !== null) {
+        await NewsService.update(toNewsUpdateDto(newsForm, editingNewsId));
+      } else {
+        await NewsService.create(toNewsCreateDto(newsForm));
+      }
+      setNewsForm(emptyNewsForm);
+      setEditingNewsId(null);
+      await fetchNews();
+    } catch (err: unknown) {
+      const msg =
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        err.response &&
+        typeof err.response === "object" &&
+        "data" in err.response
+          ? (() => {
+              const d = (err as { response: { data: unknown } }).response.data;
+              if (d && typeof d === "object" && "detail" in d) {
+                const detail = (d as { detail: unknown }).detail;
+                if (Array.isArray(detail))
+                  return `422: ${detail.map((e: { msg?: string; loc?: unknown }) => e.msg ?? JSON.stringify(e.loc)).join("; ")}`;
+                return `422: ${String(detail)}`;
+              }
+              return String(d);
+            })()
+          : null;
+      setError(
+        msg ||
+          (editingNewsId !== null
+            ? "Помилка оновлення новини"
+            : "Помилка створення новини")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteNews = async (id: number) => {
     setLoading(true);
     setError(null);
     try {
@@ -174,20 +270,40 @@ const NewsAdmin: React.FC = () => {
     }
   };
 
-  const handleFind = async () => {
+  const handleMainImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setNewsForm({
+        ...newsForm,
+        main_image_file: e.target.files[0],
+      });
+    }
+  };
+
+  const handleGalleryChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setNewsForm({
+        ...newsForm,
+        gallery_files: Array.from(e.target.files),
+      });
+    }
+  };
+
+  const handleFindNews = async () => {
     setLoading(true);
     setError(null);
     setFoundNews(null);
     try {
-      let data: NewsEntity | null = null;
       if (searchType === "id") {
-        data = await NewsService.getById(Number(findId));
-      } else if (searchType === "name") {
-        const all = await NewsService.getAll(0, 100);
+        const id = Number(findId);
+        if (!Number.isNaN(id)) {
+          const data = await NewsService.getById(id);
+          setFoundNews(data);
+        }
+      } else {
+        const all = await NewsService.getAll(0, 200);
         const arr = unwrapApiResponse(all);
-        data = arr.find((n) => n.name === findName) ?? null;
+        setFoundNews(arr.find((n) => n.name === findName) ?? null);
       }
-      setFoundNews(data);
     } catch {
       setError("Не знайдено");
     } finally {
@@ -198,432 +314,470 @@ const NewsAdmin: React.FC = () => {
   const tableData = useMemo(() => {
     if (tableMode === "all") return newsList;
     if (!foundNews) return [];
-    if (Array.isArray(foundNews)) return foundNews;
     return [foundNews];
   }, [tableMode, newsList, foundNews]);
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography
-        variant="h5"
-        color="text.primary"
-        align="center"
-        sx={{ mb: 3 }}
-      >
+      <Typography variant="h5" color="text.primary" align="center" sx={{ mb: 3 }}>
         Адміністрування новин
       </Typography>
-      {loading && <CircularProgress />}
-      {error && <Typography color="error">{error}</Typography>}
-
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Створити/оновити новину
+      {loading && <CircularProgress sx={{ mb: 2 }} />}
+      {error && (
+        <Typography color="error" sx={{ mb: 2 }}>
+          {error}
         </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 2,
-            mb: 2,
-            alignItems: "flex-end",
-          }}
-        >
-          <TextField
-            label="Назва"
-            value={newNews.name}
-            onChange={(e) => setNewNews({ ...newNews, name: e.target.value })}
-            size="small"
-            fullWidth
-            sx={{ minWidth: 200, flex: "1 1 200px" }}
-          />
-          <TextField
-            label="Опис"
-            value={newNews.description}
-            onChange={(e) =>
-              setNewNews({ ...newNews, description: e.target.value })
-            }
-            size="small"
-            fullWidth
-            sx={{ minWidth: 200, flex: "1 1 200px" }}
-          />
-          <FormControl
-            fullWidth
-            size="small"
-            sx={{ minWidth: 200, flex: "1 1 200px" }}
-          >
-            <InputLabel>Кафедра</InputLabel>
-            <Select
-              value={newNews.department_id}
-              label="Кафедра"
-              onChange={(e) =>
-                setNewNews({
-                  ...newNews,
-                  department_id: e.target.value,
-                })
-              }
-            >
-              {departments.map((d) => (
-                <MenuItem key={d.id} value={d.id}>
-                  {d.name} (id: {d.id})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label="User ID"
-            value={newNews.user_id}
-            onChange={(e) =>
-              setNewNews({ ...newNews, user_id: e.target.value })
-            }
-            size="small"
-            type="number"
-            fullWidth
-            sx={{ minWidth: 120, flex: "1 1 120px" }}
-          />
+      )}
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<CloudUploadIcon />}
-              sx={{
-                bgcolor: theme.palette.background.paper,
-                border: `1px dashed ${theme.palette.primary.main}`,
-                color: theme.palette.primary.main,
-                "&:hover": {
-                  bgcolor: theme.palette.action.hover,
-                  borderColor: theme.palette.primary.dark,
-                  color: theme.palette.primary.dark,
-                },
-                minWidth: 180,
-                transition: "all 0.2s",
-              }}
-            >
-              Головне зображення
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleMainImageChange}
-              />
+      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+        <Tab label="Категорії новин" />
+        <Tab label="Новини" />
+      </Tabs>
+
+      {tab === 0 && (
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Створити / оновити категорію
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+            <TextField
+              label="Назва категорії"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              size="small"
+              sx={{ minWidth: 260 }}
+            />
+            <Button variant="contained" onClick={handleSaveCategory}>
+              {editingCategoryId !== null ? "Зберегти зміни" : "Створити категорію"}
             </Button>
-            {newNews.main_image_file && (
-              <Box
-                sx={{
-                  ml: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  bgcolor: theme.palette.background.default,
-                  borderRadius: 1,
-                  px: 1,
-                  py: 0.5,
-                  border: `1px solid ${theme.palette.divider}`,
+            {editingCategoryId !== null && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => {
+                  setCategoryName("");
+                  setEditingCategoryId(null);
                 }}
               >
-                <img
-                  src={URL.createObjectURL(newNews.main_image_file)}
-                  alt="main"
-                  style={{ maxWidth: 40, maxHeight: 40, borderRadius: 4 }}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{
-                    maxWidth: 120,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {newNews.main_image_file.name}
-                </Typography>
-                <Button
-                  size="small"
-                  color="error"
-                  onClick={() =>
-                    setNewNews({ ...newNews, main_image_file: null })
-                  }
-                >
-                  ×
-                </Button>
-              </Box>
+                Скасувати
+              </Button>
             )}
           </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              flex: "1 1 300px",
-            }}
-          >
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<CloudUploadIcon />}
-              sx={{
-                bgcolor: theme.palette.background.paper,
-                border: `1px dashed ${theme.palette.primary.main}`,
-                color: theme.palette.primary.main,
-                "&:hover": {
-                  bgcolor: theme.palette.action.hover,
-                  borderColor: theme.palette.primary.dark,
-                  color: theme.palette.primary.dark,
-                },
-                minWidth: 180,
-                transition: "all 0.2s",
-              }}
-            >
-              Галерея
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                multiple
-                onChange={handleGalleryImagesChange}
-              />
-            </Button>
-            {newNews.gallery_files && newNews.gallery_files.length > 0 && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  flexWrap: "wrap",
-                  bgcolor: theme.palette.background.default,
-                  borderRadius: 1,
-                  px: 1,
-                  py: 0.5,
-                  border: `1px solid ${theme.palette.divider}`,
-                  minHeight: 48,
-                }}
-              >
-                {newNews.gallery_files.map((file: File, idx: number) => (
-                  <Box key={idx} sx={{ position: "relative", mr: 1 }}>
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={`gallery-${idx}`}
-                      style={{ maxWidth: 40, maxHeight: 40, borderRadius: 4 }}
-                    />
+          <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
+            Список категорій
+          </Typography>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Назва</TableCell>
+                <TableCell>Дії</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {categories.map((cat) => (
+                <TableRow key={cat.id}>
+                  <TableCell>{cat.id}</TableCell>
+                  <TableCell>{cat.name}</TableCell>
+                  <TableCell>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        setCategoryName(cat.name);
+                        setEditingCategoryId(cat.id);
+                      }}
+                      sx={{ mr: 1 }}
+                    >
+                      Редагувати
+                    </Button>
                     <Button
                       size="small"
                       color="error"
-                      sx={{
-                        position: "absolute",
-                        top: -8,
-                        right: -8,
-                        minWidth: 24,
-                        minHeight: 24,
-                        p: 0,
-                        fontSize: 16,
-                      }}
-                      onClick={() => {
-                        const arr = [...newNews.gallery_files];
-                        arr.splice(idx, 1);
-                        setNewNews({ ...newNews, gallery_files: arr });
-                      }}
+                      variant="outlined"
+                      onClick={() => handleDeleteCategory(cat.id)}
                     >
-                      ×
+                      Видалити
                     </Button>
-                  </Box>
-                ))}
-              </Box>
-            )}
-          </Box>
-        </Box>
-        <Button variant="contained" onClick={handleSave} sx={{ mt: 2, mr: 2 }}>
-          {editingId !== null ? "Зберегти зміни" : "Створити новину"}
-        </Button>
-        {editingId !== null && (
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => {
-              setNewNews(emptyNews);
-              setEditingId(null);
-            }}
-            sx={{ mt: 2 }}
-          >
-            Скасувати редагування
-          </Button>
-        )}
-      </Paper>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Paper>
+      )}
 
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <FormControl sx={{ minWidth: 180, mr: 2 }} size="small">
-            <InputLabel>Режим</InputLabel>
-            <Select
-              value={tableMode}
-              label="Режим"
-              onChange={(e) => setTableMode(e.target.value as "all" | "search")}
-            >
-              <MenuItem value="all">Всі новини</MenuItem>
-              <MenuItem value="search">Пошук</MenuItem>
-            </Select>
-          </FormControl>
-          {tableMode === "search" && (
-            <>
-              <FormControl sx={{ minWidth: 180, mr: 2 }} size="small">
-                <InputLabel>Тип пошуку</InputLabel>
+      {tab === 1 && (
+        <>
+          <Paper sx={{ p: 2, mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Створити / оновити новину
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+              <TextField
+                label="Назва"
+                value={newsForm.name}
+                onChange={(e) => setNewsForm({ ...newsForm, name: e.target.value })}
+                size="small"
+                required
+                sx={{ minWidth: 220, flex: "1 1 200px" }}
+              />
+              <TextField
+                label="Опис"
+                value={newsForm.description}
+                onChange={(e) =>
+                  setNewsForm({ ...newsForm, description: e.target.value })
+                }
+                size="small"
+                multiline
+                sx={{ minWidth: 220, flex: "1 1 200px" }}
+              />
+              <FormControl size="small" sx={{ minWidth: 200, flex: "1 1 200px" }}>
+                <InputLabel>Категорія новин</InputLabel>
                 <Select
-                  value={searchType}
-                  label="Тип пошуку"
-                  onChange={(e) => setSearchType(e.target.value as "id" | "name")}
+                  value={
+                    newsForm.newscategory_id === ""
+                      ? ""
+                      : String(newsForm.newscategory_id)
+                  }
+                  label="Категорія новин"
+                  onChange={(e) =>
+                    setNewsForm({
+                      ...newsForm,
+                      newscategory_id:
+                        e.target.value === "" ? "" : Number(e.target.value),
+                    })
+                  }
                 >
-                  <MenuItem value="id">За ID</MenuItem>
-                  <MenuItem value="name">За назвою</MenuItem>
+                  <MenuItem value="">— не обрано —</MenuItem>
+                  {categories.map((c) => (
+                    <MenuItem key={c.id} value={String(c.id)}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
-              {searchType === "id" && (
-                <TextField
-                  label="ID"
-                  value={findId}
-                  onChange={(e) => setFindId(e.target.value)}
-                  size="small"
-                  sx={{ mr: 2 }}
-                />
-              )}
-              {searchType === "name" && (
-                <TextField
-                  label="Назва"
-                  value={findName}
-                  onChange={(e) => setFindName(e.target.value)}
-                  size="small"
-                  sx={{ mr: 2 }}
-                />
-              )}
-              <Button variant="outlined" onClick={handleFind} sx={{ ml: 2 }}>
-                Знайти
-              </Button>
-            </>
-          )}
-        </Box>
+              <FormControl size="small" sx={{ minWidth: 200, flex: "1 1 200px" }}>
+                <InputLabel>Кафедра</InputLabel>
+                <Select
+                  value={
+                    newsForm.department_id === ""
+                      ? ""
+                      : String(newsForm.department_id)
+                  }
+                  label="Кафедра"
+                  onChange={(e) =>
+                    setNewsForm({
+                      ...newsForm,
+                      department_id:
+                        e.target.value === "" ? "" : Number(e.target.value),
+                    })
+                  }
+                >
+                  <MenuItem value="">— не обрано —</MenuItem>
+                  {departments.map((d) => (
+                    <MenuItem key={d.id} value={String(d.id)}>
+                      {d.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          {tableMode === "all" ? "Всі новини" : "Результати пошуку"}
-        </Typography>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Назва</TableCell>
-              <TableCell>Опис</TableCell>
-              <TableCell>Департамент</TableCell>
-              <TableCell>Користувач</TableCell>
-              <TableCell>Головне зображення</TableCell>
-              <TableCell>Галерея</TableCell>
-              <TableCell>Дії</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {tableData.map((news) => (
-              <TableRow key={news.id}>
-                <TableCell>
-                  <span
-                    style={{
-                      color: "#1976d2",
-                      cursor: "pointer",
-                      textDecoration: "underline",
+              {editingNewsId === null && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: "1 1 100%" }}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<CloudUploadIcon />}
+                    sx={{
+                      bgcolor: theme.palette.background.paper,
+                      border: `1px dashed ${theme.palette.primary.main}`,
+                      color: theme.palette.primary.main,
+                      "&:hover": {
+                        bgcolor: theme.palette.action.hover,
+                        borderColor: theme.palette.primary.dark,
+                        color: theme.palette.primary.dark,
+                      },
+                      minWidth: 200,
                     }}
-                    onClick={() =>
-                      entityDetails.showDetails("Новина", NewsService, news.id)
-                    }
                   >
-                    {news.id}
-                  </span>
-                </TableCell>
-                <TableCell>{news.name}</TableCell>
-                <TableCell>{news.description}</TableCell>
-                <TableCell>
-                  {news.department?.name ||
-                    departments.find((d) => d.id === news.department_id)
-                      ?.name ||
-                    news.department_id}
-                </TableCell>
-                <TableCell>
-                  {news.users?.name || news.user_id}
-                  {news.users?.email && (
-                    <span style={{ color: "#888", fontSize: 12 }}>
-                      <br />
-                      {news.users.email}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {news.photo_path && (
-                    <a
-                      href={news.photo_path}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    Головне зображення *
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={handleMainImageChange}
+                    />
+                  </Button>
+                  {newsForm.main_image_file && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        bgcolor: theme.palette.background.default,
+                        borderRadius: 1,
+                        px: 1,
+                        py: 0.5,
+                        border: `1px solid ${theme.palette.divider}`,
+                      }}
                     >
                       <img
-                        src={news.photo_path}
-                        alt="main"
-                        style={{ maxWidth: 80, maxHeight: 80 }}
+                        src={URL.createObjectURL(newsForm.main_image_file)}
+                        alt=""
+                        style={{ maxWidth: 40, maxHeight: 40, borderRadius: 4 }}
                       />
-                    </a>
+                      <Typography variant="body2" sx={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {newsForm.main_image_file.name}
+                      </Typography>
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() =>
+                          setNewsForm({ ...newsForm, main_image_file: null })
+                        }
+                      >
+                        ×
+                      </Button>
+                    </Box>
                   )}
-                </TableCell>
-                <TableCell>
-                  {Array.isArray(news.gallery_photos) &&
-                  news.gallery_photos.length > 0
-                    ? news.gallery_photos.map(
-                        (imgObj: { image_path?: string }, idx: number) =>
-                          imgObj.image_path && (
-                            <a
-                              key={idx}
-                              href={imgObj.image_path}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{ marginRight: 4 }}
-                            >
-                              <img
-                                src={imgObj.image_path}
-                                alt={`gallery-${idx}`}
-                                style={{ maxWidth: 50, maxHeight: 50 }}
-                              />
-                            </a>
-                          )
-                      )
-                    : ""}
-                </TableCell>
-                <TableCell>
+                </Box>
+              )}
+
+              {editingNewsId === null && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: "1 1 100%" }}>
                   <Button
-                    size="small"
                     variant="outlined"
-                    onClick={() => {
-                      setNewNews({ ...emptyNews, ...news });
-                      setEditingId(news.id);
+                    component="label"
+                    startIcon={<CloudUploadIcon />}
+                    sx={{
+                      bgcolor: theme.palette.background.paper,
+                      border: `1px dashed ${theme.palette.primary.main}`,
+                      color: theme.palette.primary.main,
+                      "&:hover": {
+                        bgcolor: theme.palette.action.hover,
+                        borderColor: theme.palette.primary.dark,
+                        color: theme.palette.primary.dark,
+                      },
+                      minWidth: 180,
                     }}
-                    sx={{ mr: 1 }}
                   >
-                    Оновити
+                    Галерея
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      multiple
+                      onChange={handleGalleryChange}
+                    />
                   </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    variant="outlined"
-                    onClick={() => handleDelete(news.id)}
-                  >
-                    Видалити
+                  {newsForm.gallery_files.length > 0 && (
+                    <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
+                      {newsForm.gallery_files.map((file, idx) => (
+                        <Box key={idx} sx={{ position: "relative" }}>
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt=""
+                            style={{ maxWidth: 40, maxHeight: 40, borderRadius: 4 }}
+                          />
+                          <Button
+                            size="small"
+                            color="error"
+                            sx={{ position: "absolute", top: -8, right: -8, minWidth: 24, minHeight: 24, p: 0 }}
+                            onClick={() => {
+                              const arr = newsForm.gallery_files.filter((_, i) => i !== idx);
+                              setNewsForm({ ...newsForm, gallery_files: arr });
+                            }}
+                          >
+                            ×
+                          </Button>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              )}
+            </Box>
+            <Box sx={{ mt: 2 }}>
+              <Button variant="contained" onClick={handleSaveNews} sx={{ mr: 2 }}>
+                {editingNewsId !== null ? "Зберегти зміни" : "Створити новину"}
+              </Button>
+              {editingNewsId !== null && (
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => {
+                    setNewsForm(emptyNewsForm);
+                    setEditingNewsId(null);
+                  }}
+                >
+                  Скасувати редагування
+                </Button>
+              )}
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: 2, mb: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2, mb: 2 }}>
+              <FormControl size="small" sx={{ minWidth: 160 }}>
+                <InputLabel>Режим</InputLabel>
+                <Select
+                  value={tableMode}
+                  label="Режим"
+                  onChange={(e) => setTableMode(e.target.value as "all" | "search")}
+                >
+                  <MenuItem value="all">Всі</MenuItem>
+                  <MenuItem value="search">Пошук</MenuItem>
+                </Select>
+              </FormControl>
+              {tableMode === "search" && (
+                <>
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <InputLabel>Тип</InputLabel>
+                    <Select
+                      value={searchType}
+                      label="Тип"
+                      onChange={(e) => setSearchType(e.target.value as "id" | "name")}
+                    >
+                      <MenuItem value="id">ID</MenuItem>
+                      <MenuItem value="name">Назва</MenuItem>
+                    </Select>
+                  </FormControl>
+                  {searchType === "id" && (
+                    <TextField
+                      label="ID"
+                      value={findId}
+                      onChange={(e) => setFindId(e.target.value)}
+                      size="small"
+                      type="number"
+                      sx={{ width: 100 }}
+                    />
+                  )}
+                  {searchType === "name" && (
+                    <TextField
+                      label="Назва"
+                      value={findName}
+                      onChange={(e) => setFindName(e.target.value)}
+                      size="small"
+                      sx={{ minWidth: 200 }}
+                    />
+                  )}
+                  <Button variant="contained" onClick={handleFindNews}>
+                    Знайти
                   </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
+                </>
+              )}
+            </Box>
+            <Typography variant="h6" sx={{ mb: 1 }}>
+              {tableMode === "all" ? "Всі новини" : "Результат пошуку"}
+            </Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Назва</TableCell>
+                  <TableCell>Опис</TableCell>
+                  <TableCell>Категорія</TableCell>
+                  <TableCell>Кафедра</TableCell>
+                  <TableCell>Головне зображення</TableCell>
+                  <TableCell>Галерея</TableCell>
+                  <TableCell>Дії</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {tableData.map((news, index) => (
+                  <TableRow key={`news-${news.id ?? index}-${index}`}>
+                    <TableCell>
+                      <span
+                        style={{
+                          color: "#1976d2",
+                          cursor: "pointer",
+                          textDecoration: "underline",
+                        }}
+                        onClick={() =>
+                          entityDetails.showDetails("Новина", NewsService, news.id)
+                        }
+                      >
+                        {news.id}
+                      </span>
+                    </TableCell>
+                    <TableCell>{news.name}</TableCell>
+                    <TableCell sx={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {news.description ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      {news.newscategory?.name ?? news.newscategory_id ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      {news.department?.name ?? news.department_id ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      {news.photo_path ? (
+                        <a
+                          href={getNewsImageUrl(news.photo_path)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <img
+                            src={getNewsImageUrl(news.photo_path)}
+                            alt=""
+                            style={{ maxWidth: 60, maxHeight: 60, objectFit: "cover" }}
+                          />
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {news.gallery_photos?.length
+                        ? `${news.gallery_photos.length} фото`
+                        : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => {
+                          setNewsForm({
+                            name: news.name,
+                            description: news.description ?? "",
+                            newscategory_id: news.newscategory_id ?? "",
+                            department_id: news.department_id ?? "",
+                            main_image_file: null,
+                            gallery_files: [],
+                          });
+                          setEditingNewsId(news.id);
+                        }}
+                        sx={{ mr: 1 }}
+                      >
+                        Редагувати
+                      </Button>
+                      <Button
+                        size="small"
+                        color="error"
+                        variant="outlined"
+                        onClick={() => handleDeleteNews(news.id)}
+                      >
+                        Видалити
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Paper>
+        </>
+      )}
 
       <Dialog
         open={entityDetails.modalOpen}
         onClose={entityDetails.close}
-        maxWidth="xs"
+        maxWidth="sm"
         fullWidth
       >
         <DialogTitle>{entityDetails.modalTitle}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component="div">
             <pre style={{ fontSize: 14, whiteSpace: "pre-wrap" }}>
               {entityDetails.loading
                 ? "Завантаження..."

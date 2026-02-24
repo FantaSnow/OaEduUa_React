@@ -5,13 +5,22 @@ import type { TeacherEntity } from "@/types/entities";
 
 const http = new HttpClient({});
 
+/** Відповідає schemas.TeacherCreate — усі поля обов'язкові */
 export interface TeacherCreateDto {
   name: string;
-  email?: string;
-  department_id?: number;
+  department_id: number;
+  email: string;
+  connectionCode: string;
 }
 
-export interface TeacherUpdateDto extends TeacherEntity {}
+/** Відповідає schemas.TeacherUpdate */
+export interface TeacherUpdateDto {
+  id: number;
+  name: string;
+  department_id: number;
+  email: string;
+  connectionCode: string;
+}
 
 class TeacherService {
   async getAll(skip = 0, limit = 10): Promise<ApiResponse<TeacherEntity>> {
@@ -19,8 +28,9 @@ class TeacherService {
       `/teachers/get-all?skip=${skip}&limit=${limit}`
     );
   }
-  async getByName(name: string): Promise<TeacherEntity> {
-    return http.get<TeacherEntity>(
+  /** Бек повертає List[Teacher] */
+  async getByName(name: string): Promise<TeacherEntity[]> {
+    return http.get<TeacherEntity[]>(
       `/teachers/get-by-name?name=${encodeURIComponent(name)}`
     );
   }

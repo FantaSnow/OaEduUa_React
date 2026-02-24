@@ -12,7 +12,7 @@ const categories = [
   { label: "Викладачі", path: "TeacherAdmin" },
   { label: "Предмети", path: "SubjectAdmin" },
   { label: "Спеціальність", path: "SpecialtyAdmin" },
-  { label: "Ролі", path: "RoleAdmin" },
+  // { label: "Ролі", path: "RoleAdmin" }, // сховано
   { label: "Кафедри", path: "DepartmentAdmin" },
   { label: "Групи", path: "GroupAdmin" },
   { label: "ТипУроку", path: "ClassTypeAdmin" },

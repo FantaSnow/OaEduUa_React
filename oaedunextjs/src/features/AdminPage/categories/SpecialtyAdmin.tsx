@@ -79,14 +79,35 @@ const SpecialtyAdmin: React.FC = () => {
   }, []);
 
   const handleSave = async () => {
+    const name = String(newSpecialty.name ?? "").trim();
+    const specialty_number = Number(newSpecialty.specialty_number);
+    const department_id =
+      newSpecialty.department_id === "" || newSpecialty.department_id == null
+        ? undefined
+        : Number(newSpecialty.department_id);
+
+    if (!name) {
+      setError("Введіть назву спеціальності");
+      return;
+    }
+    if (Number.isNaN(specialty_number) || specialty_number < 0) {
+      setError("Номер спеціальності має бути невід'ємним числом");
+      return;
+    }
+    if (department_id === undefined || Number.isNaN(department_id)) {
+      setError("Оберіть кафедру");
+      return;
+    }
+
+    const payload = {
+      name,
+      specialty_number,
+      department_id,
+    };
+
     setLoading(true);
     setError(null);
     try {
-      const payload = {
-        name: String(newSpecialty.name),
-        specialty_number: String(newSpecialty.specialty_number || ""),
-        department_id: Number(newSpecialty.department_id) || undefined,
-      };
       if (editingId !== null) {
         await SpecialtyService.update({ ...payload, id: editingId });
       } else {
@@ -192,17 +213,24 @@ const SpecialtyAdmin: React.FC = () => {
           >
             <InputLabel>Кафедра</InputLabel>
             <Select
-              value={newSpecialty.department_id}
+              value={
+                newSpecialty.department_id === "" ||
+                newSpecialty.department_id == null
+                  ? ""
+                  : String(newSpecialty.department_id)
+              }
               label="Кафедра"
               onChange={(e) =>
                 setNewSpecialty({
                   ...newSpecialty,
-                  department_id: e.target.value,
+                  department_id:
+                    e.target.value === "" ? "" : Number(e.target.value),
                 })
               }
             >
+              <MenuItem value="">— не обрано —</MenuItem>
               {departments.map((d) => (
-                <MenuItem key={d.id} value={d.id}>
+                <MenuItem key={d.id} value={String(d.id)}>
                   {d.name} (id: {d.id})
                 </MenuItem>
               ))}
@@ -369,7 +397,7 @@ const SpecialtyAdmin: React.FC = () => {
       >
         <DialogTitle>{entityDetails.modalTitle}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component="div">
             <pre style={{ fontSize: 14, whiteSpace: "pre-wrap" }}>
               {entityDetails.loading
                 ? "Завантаження..."

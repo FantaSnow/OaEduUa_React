@@ -7,72 +7,60 @@ import {
   Paper,
   CircularProgress,
 } from "@mui/material";
-const volunteerImg = "/assets/images/NoPhoto.jpg";
+import VolunteeringService from "@/api/services/VolunteeringService";
+import VolunteeringCategoryService from "@/api/services/VolunteeringCategoryService";
+import { formatDateOnlyEuropean } from "@/utils/date";
+import type { VolunteeringEntity } from "@/types/entities";
 
-const dataSource = [
-  {
-    id: "1",
-    title: "Допоможіть організувати благодійний ярмарок для підтримки ЗСУ",
-    date: "10 червня 2025",
-    location: "м. Київ, вул. Хрещатик, 22",
-    org: "Благодійний фонд 'Відкриті Серця'",
-    orgLogo: "https://smr.gov.ua/images/news/Podii/2023/04/11/5.jpg",
-    image: "https://smr.gov.ua/images/news/Podii/2023/04/11/5.jpg",
-    shifts: [
-      "09:00 – 12:00 — потрібні 5 волонтерів;",
-      "12:00 – 15:00 — потрібні 5 волонтерів;",
-      "15:00 – 18:00 — потрібні 5 волонтерів;",
-    ],
-    description:
-      "Долучайтесь до організації благодійного ярмарку для збору коштів на підтримку ЗСУ. Потрібна допомога з підготовкою локації, роздачею листівок, організацією майстер-класів та підтримкою гостей.",
-    tags: ["Організація", "Благодійність", "ЗСУ"],
-    banner: "https://smr.gov.ua/images/news/Podii/2023/04/11/5.jpg",
-  },
-  {
-    id: "2",
-    title: "Волонтер у притулку для тварин “Друзі”",
-    date: "Щосуботи, червень–серпень 2025",
-    location: "м. Львів, вул. Зелена, 145",
-    org: "Притулок 'Друзі'",
-    orgLogo: volunteerImg,
-    image: volunteerImg,
-    shifts: [
-      "10:00 – 13:00 — потрібні 2 волонтери;",
-      "13:00 – 16:00 — потрібні 2 волонери;",
-    ],
-    description:
-      "Потрібні волонтери для вигулу собак, прибирання території та допомоги у догляді за тваринами. Досвід не обов'язковий, головне — любов до тварин!",
-    tags: ["Тварини", "Догляд", "Допомога"],
-    banner: volunteerImg,
-  },
-  {
-    id: "3",
-    title: "Проведення майстер-класів для дітей у лікарні",
-    date: "Щосереди, 15:00 – 17:00",
-    location: "м. Харків, вул. Наукова, 7, дитяча лікарня №3",
-    org: "ГО 'Щасливе дитинство'",
-    orgLogo: volunteerImg,
-    image: volunteerImg,
-    shifts: ["15:00 – 17:00 — потрібні 3 волонтери;"],
-    description:
-      "Запрошуємо креативних волонтерів для проведення майстер-класів з малювання, ліплення та інших творчих занять для дітей, які перебувають на лікуванні.",
-    tags: ["Діти", "Творчість", "Майстер-клас"],
-    banner: volunteerImg,
-  },
-];
+const volunteerImg = "/assets/images/NoPhoto.jpg";
 
 const VolunteeringDetails: React.FC = () => {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [data, setData] = useState<(typeof dataSource)[number] | null>(null);
+  const [data, setData] = useState<VolunteeringEntity | null>(null);
+  const [categoryName, setCategoryName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (params?.id) {
-      const item = dataSource.find((x) => x.id === params.id) || null;
-      setData(item);
+    const id = params?.id ? Number(params.id) : NaN;
+    if (!params?.id || Number.isNaN(id)) {
       setLoading(false);
+      setData(null);
+      setCategoryName(null);
+      return;
     }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setCategoryName(null);
+    VolunteeringService.getById(id)
+      .then((item) => {
+        if (!cancelled) {
+          setData(item);
+          if (item.volunteeringcategory?.name) {
+            setCategoryName(item.volunteeringcategory.name);
+          } else if (item.volunteeringcategory_id) {
+            VolunteeringCategoryService.getById(item.volunteeringcategory_id)
+              .then((cat) => {
+                if (!cancelled) setCategoryName(cat.name);
+              })
+              .catch(() => {});
+          }
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError("Не вдалося завантажити");
+          setData(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [params?.id]);
 
   if (loading) {
@@ -83,11 +71,11 @@ const VolunteeringDetails: React.FC = () => {
     );
   }
 
-  if (!data) {
+  if (error || !data) {
     return (
       <Box sx={{ p: 6 }}>
         <Typography variant="h2" color="error">
-          Волонтерство не знайдено
+          {error || "Волонтерство не знайдено"}
         </Typography>
         <Button sx={{ mt: 2 }} onClick={() => router.back()}>
           Назад
@@ -95,6 +83,12 @@ const VolunteeringDetails: React.FC = () => {
       </Box>
     );
   }
+
+  const dateStartFormatted = formatDateOnlyEuropean(data.date_start);
+  const dateEndFormatted = formatDateOnlyEuropean(data.date_end);
+  const dateText =
+    [dateStartFormatted, dateEndFormatted].filter(Boolean).join(" — ") || undefined;
+  const tags = [categoryName].filter(Boolean) as string[];
 
   return (
     <Box sx={{ minHeight: "100vh", px: 10 }}>
@@ -119,7 +113,7 @@ const VolunteeringDetails: React.FC = () => {
           }}
         >
           <Typography variant="h1" color="text.primary">
-            {data.title}
+            {data.name}
           </Typography>
           <Button variant="outlined" onClick={() => router.back()}>
             Назад
@@ -148,56 +142,49 @@ const VolunteeringDetails: React.FC = () => {
               gap: 2,
             }}
           >
-            <Typography variant="h4" color="text.primary">
-              {data.date}
-            </Typography>
-            <Typography variant="h4" color="text.primary" sx={{ mb: 2 }}>
-              {data.location}
-            </Typography>
-            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-              {data.tags.map((tag, idx) => (
-                <Button
-                  key={idx}
-                  variant="contained"
-                  size="small"
-                  sx={{
-                    bgcolor: "primary.primary20",
-                    px: 2,
-                    minWidth: 80,
-                    width: "auto",
-                    boxShadow: "none",
-                  }}
-                >
-                  {tag}
-                </Button>
-              ))}
-            </Box>
-            <Typography variant="h2" color="text.primary" sx={{ mt: 2, mb: 1 }}>
-              Ставай волонтером у пробації
-            </Typography>
-            <Typography variant="bodyM" color="text.primary" sx={{ mb: 3 }}>
-              {data.description}
-            </Typography>
-            <Box sx={{ mt: 1 }}>
-              <Typography
-                variant="h2"
-                color="text.primary"
-                sx={{
-                  mb: 1,
-                }}
-              >
-                Графік роботи поділений на 3 зміни (можна обрати зручну):
+            {dateText && (
+              <Typography variant="h4" color="text.primary">
+                {dateText}
               </Typography>
-              <ul style={{ margin: 0, paddingLeft: 20 }}>
-                {data.shifts.map((shift, idx) => (
-                  <li key={idx}>
-                    <Typography variant="bodyM" color="text.primary">
-                      {shift}
-                    </Typography>
-                  </li>
+            )}
+            {data.location && (
+              <Typography variant="h4" color="text.primary" sx={{ mb: 2 }}>
+                {data.location}
+              </Typography>
+            )}
+            {tags.length > 0 && (
+              <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
+                {tags.map((tag, idx) => (
+                  <Button
+                    key={idx}
+                    variant="contained"
+                    size="small"
+                    sx={{
+                      bgcolor: "primary.primary20",
+                      px: 2,
+                      minWidth: 80,
+                      width: "auto",
+                      boxShadow: "none",
+                    }}
+                  >
+                    {tag}
+                  </Button>
                 ))}
-              </ul>
-            </Box>
+              </Box>
+            )}
+            <Typography variant="h2" color="text.primary" sx={{ mt: 2, mb: 1 }}>
+              Ставай волонтером
+            </Typography>
+            {data.desc && (
+              <Typography variant="bodyM" color="text.primary" sx={{ mb: 3 }}>
+                {data.desc}
+              </Typography>
+            )}
+            {data.goal && (
+              <Typography variant="bodyM" color="text.primary">
+                <strong>Мета:</strong> {data.goal} волонтерів
+              </Typography>
+            )}
           </Paper>
 
           <Paper
@@ -218,8 +205,8 @@ const VolunteeringDetails: React.FC = () => {
           >
             <Box
               component="img"
-              src={data.banner as string}
-              alt="banner"
+              src={volunteerImg}
+              alt=""
               sx={{
                 width: "100%",
                 height: "100%",
@@ -235,4 +222,3 @@ const VolunteeringDetails: React.FC = () => {
 };
 
 export default VolunteeringDetails;
-

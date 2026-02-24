@@ -33,13 +33,13 @@ export interface ClassTypeEntity {
 }
 
 /**
- * Спеціальність.
+ * Спеціальність (SpecialtyBase + id).
  */
 export interface Specialty {
   id: number;
   name: string;
-  specialty_number?: string;
-  department_id?: number | string;
+  specialty_number: number;
+  department_id: number;
 }
 
 /**
@@ -64,11 +64,13 @@ export interface TeacherEntity {
 }
 
 /**
- * Предмет (для адмінки).
+ * Предмет (SubjectBase + id).
  */
 export interface SubjectEntity {
   id: number;
   name: string;
+  desc: string;
+  lecture_count: number;
 }
 
 /**
@@ -79,34 +81,45 @@ export interface NewsGalleryItem {
 }
 
 /**
- * Новина (для адмінки).
+ * Категорія новин.
+ */
+export interface NewsCategory {
+  id: number;
+  name: string;
+}
+
+/**
+ * Новина (для адмінки). Відповідає бекенду: name, description, newscategory_id, department_id, user_id, photo_path, gallery_photos.
  */
 export interface NewsEntity {
   id: number;
   name: string;
-  desc?: string;
-  categ?: number;
-  depart?: number;
-  main_image?: string;
-  gallery_images?: string[];
+  description: string;
+  newscategory_id: number;
+  department_id: number;
+  user_id?: number;
+  photo_path?: string | null;
   gallery_photos?: NewsGalleryItem[];
+  newscategory?: { id: number; name: string };
+  department?: { id: number; name: string };
+  users?: { id: number; name: string; email?: string };
 }
 
 /**
- * Волонтерство (для адмінки).
+ * Волонтерство (VolunteeringBase + id).
  */
 export interface VolunteeringEntity {
   id: number;
-  title: string;
-  description?: string;
-  organization?: string;
-  date?: string;
-  location?: string;
-  org?: string;
-  orgLogo?: string;
-  image?: string;
-  category?: string;
-  is_active?: boolean;
+  name: string;
+  desc: string;
+  date_start: string;
+  date_end: string;
+  location: string;
+  department_id: number;
+  user_id: number;
+  goal: number;
+  volunteeringcategory_id: number;
+  volunteeringcategory?: { id: number; name: string };
 }
 
 /**

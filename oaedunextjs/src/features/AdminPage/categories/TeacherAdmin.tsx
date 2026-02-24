@@ -33,7 +33,7 @@ const emptyTeacher = {
   id: 0,
   name: "",
   email: "",
-  department_id: 0,
+  department_id: "" as "" | number,
   connectionCode: "",
 };
 
@@ -52,7 +52,7 @@ const TeacherAdmin: React.FC = () => {
   const [searchType, setSearchType] = useState<"id" | "name">("id");
   const [findId, setFindId] = useState("");
   const [findName, setFindName] = useState("");
-  const [foundTeacher, setFoundTeacher] = useState<TeacherEntity | null>(null);
+  const [foundTeacher, setFoundTeacher] = useState<TeacherEntity | TeacherEntity[] | null>(null);
 
   const entityDetails = useEntityDetails<TeacherEntity>();
 
@@ -80,23 +80,44 @@ const TeacherAdmin: React.FC = () => {
   }, []);
 
   const handleSave = async () => {
+    const name = String(newTeacher.name ?? "").trim();
+    const email = String(newTeacher.email ?? "").trim();
+    const connectionCode = String(newTeacher.connectionCode ?? "").trim();
+    const department_id =
+      newTeacher.department_id === "" || newTeacher.department_id == null
+        ? undefined
+        : Number(newTeacher.department_id);
+    const validDepartmentId =
+      department_id !== undefined && !Number.isNaN(department_id)
+        ? department_id
+        : undefined;
+
+    if (!name) {
+      setError("Введіть ім'я викладача");
+      return;
+    }
+    if (validDepartmentId === undefined) {
+      setError("Оберіть кафедру");
+      return;
+    }
+
+    const payload = {
+      name,
+      department_id: validDepartmentId,
+      email: email || "",
+      connectionCode: connectionCode || "",
+    };
+
     setLoading(true);
     setError(null);
     try {
       if (editingId !== null) {
         await TeacherService.update({
           id: editingId,
-          name: String(newTeacher.name),
-          email: String(newTeacher.email || ""),
-          department_id: Number(newTeacher.department_id) || undefined,
-          connectionCode: String(newTeacher.connectionCode || ""),
+          ...payload,
         });
       } else {
-        await TeacherService.create({
-          name: String(newTeacher.name),
-          email: newTeacher.email ? String(newTeacher.email) : undefined,
-          department_id: Number(newTeacher.department_id) || undefined,
-        });
+        await TeacherService.create(payload);
       }
       setNewTeacher(emptyTeacher);
       setEditingId(null);
@@ -194,17 +215,24 @@ const TeacherAdmin: React.FC = () => {
           >
             <InputLabel>Кафедра</InputLabel>
             <Select
-              value={newTeacher.department_id}
+              value={
+                newTeacher.department_id === "" ||
+                newTeacher.department_id == null
+                  ? ""
+                  : String(newTeacher.department_id)
+              }
               label="Кафедра"
               onChange={(e) =>
                 setNewTeacher({
                   ...newTeacher,
-                  department_id: Number(e.target.value),
+                  department_id:
+                    e.target.value === "" ? "" : Number(e.target.value),
                 })
               }
             >
+              <MenuItem value="">— не обрано —</MenuItem>
               {departments.map((d) => (
-                <MenuItem key={d.id} value={d.id}>
+                <MenuItem key={d.id} value={String(d.id)}>
                   {d.name} (id: {d.id})
                 </MenuItem>
               ))}
@@ -382,7 +410,7 @@ const TeacherAdmin: React.FC = () => {
       >
         <DialogTitle>{entityDetails.modalTitle}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component="div">
             <pre style={{ fontSize: 14, whiteSpace: "pre-wrap" }}>
               {entityDetails.loading
                 ? "Завантаження..."

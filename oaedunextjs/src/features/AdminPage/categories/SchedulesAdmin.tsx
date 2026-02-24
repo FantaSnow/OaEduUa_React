@@ -115,23 +115,29 @@ const SchedulesAdmin: React.FC = () => {
     fetchSchedules();
   }, []);
 
+  function toId(val: unknown): number {
+    if (val === "" || val == null) return 0;
+    const n = Number(val);
+    return Number.isNaN(n) ? 0 : n;
+  }
+
   function cleanSchedulePayload(
     schedule: ScheduleAdminItem | ScheduleLesson | Record<string, string | number>
   ): Record<string, number | string> {
     const s = schedule as Record<string, unknown>;
     const classType =
       (s.class_type_id as number | undefined) ??
-      (typeof s.class_type === "number" ? s.class_type : 0);
+      (typeof s.class_type === "number" ? s.class_type : undefined);
     return {
       id: (s.id as number | undefined) ?? 0,
-      date: (s.date as string | undefined) ?? "",
-      auditory: (s.auditory as string | undefined) ?? "",
-      connectionCode: (s.connectionCode as string | undefined) ?? "",
-      subject_id: Number(s.subject_id) || 0,
-      group_id: Number(s.group_id) || 0,
-      teacher_id: Number(s.teacher_id) || 0,
-      class_type: Number(classType) || 0,
-      class_number_id: Number(s.class_number_id) || 0,
+      date: String(s.date ?? "").trim(),
+      auditory: String(s.auditory ?? "").trim(),
+      connectionCode: String(s.connectionCode ?? "").trim(),
+      subject_id: toId(s.subject_id),
+      group_id: toId(s.group_id),
+      teacher_id: toId(s.teacher_id),
+      class_type: toId(classType),
+      class_number_id: toId(s.class_number_id),
     };
   }
 
@@ -250,15 +256,22 @@ const SchedulesAdmin: React.FC = () => {
           <FormControl fullWidth size="small" sx={{ minWidth: 200, flex: "1 1 200px" }}>
             <InputLabel>Предмет</InputLabel>
             <Select
-              value={newSchedule.subject_id}
+              value={
+                newSchedule.subject_id === "" || newSchedule.subject_id == null
+                  ? ""
+                  : String(newSchedule.subject_id)
+              }
               label="Предмет"
               onChange={(e) =>
-                setNewSchedule({ ...newSchedule, subject_id: e.target.value })
+                setNewSchedule({
+                  ...newSchedule,
+                  subject_id: e.target.value === "" ? "" : Number(e.target.value),
+                })
               }
             >
-              <MenuItem value="">Не вибрано</MenuItem>
+              <MenuItem value="">— не обрано —</MenuItem>
               {subjects.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
+                <MenuItem key={s.id} value={String(s.id)}>
                   {s.name} (id: {s.id})
                 </MenuItem>
               ))}
@@ -267,15 +280,22 @@ const SchedulesAdmin: React.FC = () => {
           <FormControl fullWidth size="small" sx={{ minWidth: 200, flex: "1 1 200px" }}>
             <InputLabel>Група</InputLabel>
             <Select
-              value={newSchedule.group_id}
+              value={
+                newSchedule.group_id === "" || newSchedule.group_id == null
+                  ? ""
+                  : String(newSchedule.group_id)
+              }
               label="Група"
               onChange={(e) =>
-                setNewSchedule({ ...newSchedule, group_id: e.target.value })
+                setNewSchedule({
+                  ...newSchedule,
+                  group_id: e.target.value === "" ? "" : Number(e.target.value),
+                })
               }
             >
-              <MenuItem value="">Не вибрано</MenuItem>
+              <MenuItem value="">— не обрано —</MenuItem>
               {groups.map((g) => (
-                <MenuItem key={g.id} value={g.id}>
+                <MenuItem key={g.id} value={String(g.id)}>
                   {g.name} (id: {g.id})
                 </MenuItem>
               ))}
@@ -284,15 +304,22 @@ const SchedulesAdmin: React.FC = () => {
           <FormControl fullWidth size="small" sx={{ minWidth: 200, flex: "1 1 200px" }}>
             <InputLabel>Викладач</InputLabel>
             <Select
-              value={newSchedule.teacher_id}
+              value={
+                newSchedule.teacher_id === "" || newSchedule.teacher_id == null
+                  ? ""
+                  : String(newSchedule.teacher_id)
+              }
               label="Викладач"
               onChange={(e) =>
-                setNewSchedule({ ...newSchedule, teacher_id: e.target.value })
+                setNewSchedule({
+                  ...newSchedule,
+                  teacher_id: e.target.value === "" ? "" : Number(e.target.value),
+                })
               }
             >
-              <MenuItem value="">Не вибрано</MenuItem>
+              <MenuItem value="">— не обрано —</MenuItem>
               {teachers.map((t) => (
-                <MenuItem key={t.id} value={t.id}>
+                <MenuItem key={t.id} value={String(t.id)}>
                   {t.name} (id: {t.id})
                 </MenuItem>
               ))}
@@ -301,15 +328,22 @@ const SchedulesAdmin: React.FC = () => {
           <FormControl fullWidth size="small" sx={{ minWidth: 200, flex: "1 1 200px" }}>
             <InputLabel>Тип заняття</InputLabel>
             <Select
-              value={newSchedule.class_type}
+              value={
+                newSchedule.class_type === "" || newSchedule.class_type == null
+                  ? ""
+                  : String(newSchedule.class_type)
+              }
               label="Тип заняття"
               onChange={(e) =>
-                setNewSchedule({ ...newSchedule, class_type: e.target.value })
+                setNewSchedule({
+                  ...newSchedule,
+                  class_type: e.target.value === "" ? "" : Number(e.target.value),
+                })
               }
             >
-              <MenuItem value="">Не вибрано</MenuItem>
+              <MenuItem value="">— не обрано —</MenuItem>
               {classTypes.map((ct) => (
-                <MenuItem key={ct.id} value={ct.id}>
+                <MenuItem key={ct.id} value={String(ct.id)}>
                   {ct.name} (id: {ct.id})
                 </MenuItem>
               ))}
@@ -318,15 +352,24 @@ const SchedulesAdmin: React.FC = () => {
           <FormControl fullWidth size="small" sx={{ minWidth: 200, flex: "1 1 200px" }}>
             <InputLabel>Пара</InputLabel>
             <Select
-              value={newSchedule.class_number_id}
+              value={
+                newSchedule.class_number_id === "" ||
+                newSchedule.class_number_id == null
+                  ? ""
+                  : String(newSchedule.class_number_id)
+              }
               label="Пара"
               onChange={(e) =>
-                setNewSchedule({ ...newSchedule, class_number_id: e.target.value })
+                setNewSchedule({
+                  ...newSchedule,
+                  class_number_id:
+                    e.target.value === "" ? "" : Number(e.target.value),
+                })
               }
             >
-              <MenuItem value="">Не вибрано</MenuItem>
+              <MenuItem value="">— не обрано —</MenuItem>
               {classNumbers.map((cn) => (
-                <MenuItem key={cn.id} value={cn.id}>
+                <MenuItem key={cn.id} value={String(cn.id)}>
                   {cn.number} ({cn.time_start}-{cn.time_end}) id: {cn.id}
                 </MenuItem>
               ))}
@@ -599,7 +642,7 @@ const SchedulesAdmin: React.FC = () => {
       >
         <DialogTitle>{entityDetails.modalTitle}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component="div">
             <pre style={{ fontSize: 14, whiteSpace: "pre-wrap" }}>
               {entityDetails.loading
                 ? "Завантаження..."

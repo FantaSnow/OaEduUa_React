@@ -32,6 +32,7 @@ const emptySubject = {
   id: 0,
   name: "",
   desc: "",
+  lecture_count: 0,
 };
 
 type SubjectField = keyof typeof emptySubject;
@@ -70,16 +71,29 @@ const SubjectAdmin: React.FC = () => {
   }, []);
 
   const handleSave = async () => {
+    const name = String(newSubject.name ?? "").trim();
+    const desc = String(newSubject.desc ?? "").trim();
+    const lecture_count = Number(newSubject.lecture_count);
+    if (!name) {
+      setError("Введіть назву предмета");
+      return;
+    }
+    if (Number.isNaN(lecture_count) || lecture_count < 0) {
+      setError("Кількість лекцій має бути невід'ємним числом");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       if (editingId !== null) {
         await SubjectService.update({
           id: editingId,
-          name: String(newSubject.name),
+          name,
+          desc,
+          lecture_count,
         });
       } else {
-        await SubjectService.create({ name: String(newSubject.name) });
+        await SubjectService.create({ name, desc, lecture_count });
       }
       setNewSubject(emptySubject);
       setEditingId(null);
@@ -88,7 +102,7 @@ const SubjectAdmin: React.FC = () => {
       setError(
         editingId !== null
           ? "Помилка оновлення предмета"
-          : "Помилка створення предмета"
+          : "Помилка створення предмета (можливо, предмет з такою назвою вже існує)"
       );
     } finally {
       setLoading(false);
@@ -158,6 +172,7 @@ const SubjectAdmin: React.FC = () => {
             }
             size="small"
             fullWidth
+            required
             sx={{ minWidth: 200, flex: "1 1 200px" }}
           />
           <TextField
@@ -168,7 +183,22 @@ const SubjectAdmin: React.FC = () => {
             }
             size="small"
             fullWidth
+            multiline
             sx={{ minWidth: 200, flex: "1 1 200px" }}
+          />
+          <TextField
+            label="Кількість лекцій"
+            type="number"
+            inputProps={{ min: 0 }}
+            value={newSubject.lecture_count === 0 ? "" : newSubject.lecture_count}
+            onChange={(e) =>
+              setNewSubject({
+                ...newSubject,
+                lecture_count: e.target.value === "" ? 0 : Number(e.target.value),
+              })
+            }
+            size="small"
+            sx={{ minWidth: 140 }}
           />
         </Box>
         <Button variant="contained" onClick={handleSave} sx={{ mt: 2, mr: 2 }}>
@@ -249,6 +279,7 @@ const SubjectAdmin: React.FC = () => {
               <TableCell>ID</TableCell>
               <TableCell>Назва</TableCell>
               <TableCell>Опис</TableCell>
+              <TableCell>Лекцій</TableCell>
               <TableCell>Дії</TableCell>
             </TableRow>
           </TableHead>
@@ -274,7 +305,10 @@ const SubjectAdmin: React.FC = () => {
                   </span>
                 </TableCell>
                 <TableCell>{subject.name}</TableCell>
-                <TableCell>{subject.desc}</TableCell>
+                <TableCell sx={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {subject.desc ?? "—"}
+                </TableCell>
+                <TableCell>{subject.lecture_count ?? "—"}</TableCell>
                 <TableCell>
                   <Button
                     size="small"
@@ -310,7 +344,7 @@ const SubjectAdmin: React.FC = () => {
       >
         <DialogTitle>{entityDetails.modalTitle}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component="div">
             <pre style={{ fontSize: 14, whiteSpace: "pre-wrap" }}>
               {entityDetails.loading
                 ? "Завантаження..."

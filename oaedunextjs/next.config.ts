@@ -5,10 +5,16 @@ const nextConfig: NextConfig = {
   async rewrites() {
     const backendUrl =
       process.env.API_BACKEND_URL || "http://localhost:8000";
+    // Якщо бекенд підключає роутери з префіксом /api (наприклад include_router(..., prefix="/api")),
+    // встановіть API_BACKEND_PREFIX=api у .env.local
+    const apiPrefix = process.env.API_BACKEND_PREFIX || "";
+    const destinationPath = apiPrefix
+      ? `${backendUrl}/${apiPrefix}/:path*`
+      : `${backendUrl}/:path*`;
     return [
       {
         source: "/api/:path*",
-        destination: `${backendUrl}/:path*`,
+        destination: destinationPath,
       },
     ];
   },
